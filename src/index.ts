@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
 import saml, { VerifyWithoutRequest, Strategy } from "@node-saml/passport-saml";
@@ -45,7 +45,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get("/", (req: Request, res: Response) => res.redirect("/login"));
+const AuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
+app.get("/", AuthMiddleware,(req: Request, res: Response) => {
+  res.send(JSON.stringify(req.user));
+});
 
 app.get('/login', passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true}), (req, res) => res.redirect('/'));
 
@@ -63,12 +72,12 @@ app.post('/api/auth/login/callback', passport.authenticate('saml', {
   // const sn = req.user?.sn;
   // const displayName = req.user?.displayName;
   // const givenName = req.user?.givenName;
-  res.send(req.user);
+  res.redirect('/');
 }
   );
 
 app.get("/logout", (req: any, res) => {
-  if (!req.user) res.redirect("/");
+  if (!req.user) res.redirect("/login");
 
   samlStrategy.logout(req, (err, url) => {
     return res.redirect(url!);
@@ -81,7 +90,7 @@ app.post("/api/auth/logout/callback", (req: Request, res: Response) => {
       console.error("Error during logout:", err);
       return res.status(500).send("Error during logout");
     }
-    res.redirect("/");
+    res.redirect("/login");
   });
 });
 
