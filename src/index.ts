@@ -26,11 +26,13 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => { // erro
   console.log("Fatal error: " + JSON.stringify(err));
   next(err);
 });
+app.use(cors({
+  credentials: true, // allow cookies
+}));
 app.use(passportInstance.initialize());
 app.use(passportInstance.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 
 // routes
 app.use("/api/auth", authRoutes);
