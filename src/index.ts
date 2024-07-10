@@ -3,6 +3,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import cors from "cors";
+import morgan from "morgan";
 // local
 import passportInstance, {samlStrategy} from "./passport";
 import config from "./config";
@@ -27,12 +28,14 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => { // erro
   next(err);
 });
 app.use(cors({
+  origin: "http://localhost:3000",
   credentials: true, // allow cookies
 }));
 app.use(passportInstance.initialize());
 app.use(passportInstance.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 
 // routes
 app.use("/api/auth", authRoutes);

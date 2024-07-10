@@ -19,7 +19,7 @@ router.post('/login/callback', passportInstance.authenticate('saml', { failureRe
   // const sn = req.user?.sn;
   // const displayName = req.user?.displayName;
   // const givenName = req.user?.givenName;
-  res.redirect('/');
+  res.redirect('http://localhost:3000/');
 });
 
 router.get("/login/fail", (req: Request, res: Response) =>
@@ -31,6 +31,7 @@ router.get("/logout", AuthMiddleware, (req: any, res: Response, next: NextFuncti
   samlStrategy.logout(req, (err, url) => {
     if (err) next(err)
     if (!url) return res.status(500).send("No logout URL");
+    console.log("Logout URL: ", url);
     return res.redirect(url);
   });
 });
@@ -42,6 +43,15 @@ router.post("/logout/callback", AuthMiddleware, (req: Request, res: Response, ne
     }
     res.redirect("/api/auth/login");
   });
+});
+
+// Auth status endpoint
+router.get("/status", (req: Request, res: Response) => {
+  if (req.isAuthenticated()) {
+    res.json({ isAuthenticated: true, user: req.user });
+  } else {
+    res.json({ isAuthenticated: false });
+  }
 });
 
 export default router;
