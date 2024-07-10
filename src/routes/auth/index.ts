@@ -29,20 +29,52 @@ router.get("/login/fail", (req: Request, res: Response) =>
 // logout endpoints
 router.get("/logout", AuthMiddleware, (req: any, res: Response, next: NextFunction) => {
   samlStrategy.logout(req, (err, url) => {
-    if (err) next(err)
-    if (!url) return res.status(500).send("No logout URL");
-    console.log("Logout URL: ", url);
+
+    if (err) {
+      return res.status(500).json(
+        {
+          ok: false,
+          message: "Error during logout",
+        }
+      )
+    }
+
+    req.session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json(
+          {
+            ok: false,
+            message: "Error during logout",
+          }
+        )
+      }
+    }
+    );
+
+    if (!url) {
+      return res.status(500).json(
+        {
+          ok: false,
+          message: "Error during logout",
+        }
+      )
+    }
+
     return res.redirect(url);
   });
 });
 
-router.post("/logout/callback", AuthMiddleware, (req: Request, res: Response, next: NextFunction) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/api/auth/login");
-  });
+router.post("/logout/callback", (req: Request, res: Response, next: NextFunction) => {
+  try {
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      return res.redirect("http://localhost:3000/");
+    });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 // Auth status endpoint
