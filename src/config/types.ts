@@ -18,6 +18,7 @@ export interface PassportConfig {
 export interface AppConfig {
   port: number;
   env: Environment;
+  clientUrl: string;
 }
 
 export interface EnvConfig {

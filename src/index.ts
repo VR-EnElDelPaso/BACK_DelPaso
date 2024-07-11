@@ -3,6 +3,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import cors from "cors";
+import morgan from "morgan";
 // local
 import passportInstance, {samlStrategy} from "./passport";
 import config from "./config";
@@ -12,7 +13,6 @@ import { AuthMiddleware } from "./middlewares";
 console.log(`\n***[Environment: ${config.app.env}]***\n`);
 
 const app = express();
-const PORT = config.app.port;
 
 // app configuration
 app.use( // session configuration
@@ -26,11 +26,15 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => { // erro
   console.log("Fatal error: " + JSON.stringify(err));
   next(err);
 });
+app.use(cors({
+  origin: config.app.clientUrl,
+  credentials: true, // allow cookies
+}));
 app.use(passportInstance.initialize());
 app.use(passportInstance.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(morgan("dev"));
 
 // routes
 app.use("/api/auth", authRoutes);
@@ -51,4 +55,4 @@ app.get("/Metadata", (req: Request, res: Response) => {
     );
 });
 
-const server = app.listen(PORT, () => console.log('Listening on port %d', PORT));
+const server = app.listen(config.app.port, () => console.log('Listening on port %d', config.app.port));
