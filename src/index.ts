@@ -13,7 +13,6 @@ import { AuthMiddleware } from "./middlewares";
 console.log(`\n***[Environment: ${config.app.env}]***\n`);
 
 const app = express();
-const PORT = config.app.port;
 
 // app configuration
 app.use( // session configuration
@@ -28,7 +27,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => { // erro
   next(err);
 });
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: config.app.clientUrl,
   credentials: true, // allow cookies
 }));
 app.use(passportInstance.initialize());
@@ -56,4 +55,4 @@ app.get("/Metadata", (req: Request, res: Response) => {
     );
 });
 
-const server = app.listen(PORT, () => console.log('Listening on port %d', PORT));
+const server = app.listen(config.app.port, () => console.log('Listening on port %d', config.app.port));

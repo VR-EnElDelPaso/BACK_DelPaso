@@ -7,6 +7,7 @@ export  const development: EnvConfig = {
   app: {
     env: 'development',
     port: Number(process.env.PORT || 4006),
+    clientUrl: 'http://localhost:3000',
   },
   passport: {
     strategy: 'saml',

@@ -2,8 +2,11 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import passportInstance, { samlStrategy } from '../../passport';
 import { AuthMiddleware } from '../../middlewares';
+import config from '../../config';
+
 
 const router = Router();
+const { clientUrl } = config.app;
 
 // login endpoints
 router.get('/login', passportInstance.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }), (req, res) => res.redirect('/'));
@@ -19,7 +22,7 @@ router.post('/login/callback', passportInstance.authenticate('saml', { failureRe
   // const sn = req.user?.sn;
   // const displayName = req.user?.displayName;
   // const givenName = req.user?.givenName;
-  res.redirect('http://localhost:3000/');
+  res.redirect(clientUrl);
 });
 
 router.get("/login/fail", (req: Request, res: Response) =>
@@ -70,7 +73,7 @@ router.post("/logout/callback", (req: Request, res: Response, next: NextFunction
       if (err) {
         return next(err);
       }
-      return res.redirect("http://localhost:3000/");
+      return res.redirect(clientUrl);
     });
   } catch (error) {
     return next(error);
