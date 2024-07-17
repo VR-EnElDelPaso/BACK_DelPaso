@@ -1,8 +1,8 @@
 // dependencies
 import { NextFunction, Request, Response, Router } from 'express';
-import passportInstance, { samlStrategy } from '../../passport';
-import { AuthMiddleware } from '../../middlewares';
-import config from '../../config';
+import passportInstance, { samlStrategy } from '../passport';
+import { AuthMiddleware } from '../middlewares';
+import config from '../config';
 
 
 const router = Router();
@@ -83,9 +83,9 @@ router.post("/logout/callback", (req: Request, res: Response, next: NextFunction
 // Auth status endpoint
 router.get("/status", (req: Request, res: Response) => {
   if (req.isAuthenticated()) {
-    res.json({ isAuthenticated: true, user: req.user });
+    res.status(200).json({ isAuthenticated: true, user: req.user });
   } else {
-    res.json({ isAuthenticated: false });
+    res.status(401).json({ isAuthenticated: false });
   }
 });
 
