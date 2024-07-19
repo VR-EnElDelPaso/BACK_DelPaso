@@ -21,6 +21,7 @@
   "homepage": "https://github.com/VR-EnElDelPaso/BACK_DelPaso#readme",
   "dependencies": {
     "@node-saml/passport-saml": "^5.0.0",
+    "@prisma/client": "^5.17.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",

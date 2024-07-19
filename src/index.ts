@@ -5,7 +5,10 @@ import session from "express-session";
 import passport from "passport";
 import saml, { VerifyWithoutRequest, Strategy } from "@node-saml/passport-saml";
 import cors from "cors";
+import { PrismaClient } from "@prisma/client";
 
+// prisma
+const prisma = new PrismaClient();
 const app = express();
 const PORT = 4006 || process.env.PORT;
 
@@ -47,9 +50,9 @@ app.use(cors());
 
 app.get("/", (req: Request, res: Response) => res.redirect("/login"));
 
-app.get('/login', passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true}), (req, res) => res.redirect('/'));
+app.get('/login', passport.authenticate('saml', { failureRedirect: '/login/fail', failureFlash: true }), (req, res) => res.redirect('/'));
 
-app.post('/api/auth/login/callback', passport.authenticate('saml', { 
+app.post('/api/auth/login/callback', passport.authenticate('saml', {
   failureRedirect: '/login/fail',
   failureFlash: true
 }), (req: Request, res: Response) => {
@@ -65,7 +68,7 @@ app.post('/api/auth/login/callback', passport.authenticate('saml', {
   // const givenName = req.user?.givenName;
   res.send(req.user);
 }
-  );
+);
 
 app.get("/logout", (req: any, res) => {
   if (!req.user) res.redirect("/");
@@ -107,7 +110,11 @@ app.use((err: any, req: any, res: any, next: (arg0: any) => void) => {
 });
 
 //Solo cambie al puerto 4006 de la variable PORT de hasta arriba y agregue las ultimas lineas despues de "Listening on port"
-const server = app.listen(PORT, () => console.log('Listening on port %d', (server.address() as import('net').AddressInfo).port));
+const server = app.listen(PORT, async () => {
+  console.log('Listening on port %d', (server.address() as import('net').AddressInfo).port);
+  const x = await prisma.recorridos_comprados.findMany();
+  console.log(x);
+});
 
 function RequestWithUser(
   err: Error | null,
