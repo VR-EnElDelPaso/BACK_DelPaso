@@ -2,9 +2,15 @@
 
 ...
 
+## Requisitos previos
+
+- [ ] Node.js (version 20^)
+- [ ] npm (version 10^)
+- [ ] Docker
+
 ## Entornos
 
-Sigue estos pasos para replicar los entronos distintos configurados en este proyecto
+Sigue estos pasos para replicar los distintos entornos configurados en el proyecto
 
 ### Desarrollo
 
