@@ -4,9 +4,9 @@
 
 ## Requisitos previos
 
-- [ ] Node.js (version 20^)
-- [ ] npm (version 10^)
-- [ ] Docker
+-  Node.js (version 20^)
+-  npm (version 10^)
+-  Docker
 
 ## Entornos
 
