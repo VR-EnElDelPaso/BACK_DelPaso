@@ -1,10 +1,14 @@
-import fs from "fs";
+// todo: merge error, jump to next commit
+
+import app from "./app";
+import config from "./config";
 
 import express, { Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
 import saml, { VerifyWithoutRequest, Strategy } from "@node-saml/passport-saml";
 import cors from "cors";
+
 import { PrismaClient } from "@prisma/client";
 
 // prisma
@@ -122,3 +126,8 @@ function RequestWithUser(
 ): void {
   throw new Error("Function not implemented.");
 }
+
+app.listen(
+  config.app.port,
+  () => console.log('Listening on port %d', config.app.port)
+);
