@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  db:
+    container_name: ${PG_HOST}
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PG_PASSWORD}
+      MYSQL_DATABASE: ${PG_DATABASE}
+    ports:
+      - "3306:3306" 

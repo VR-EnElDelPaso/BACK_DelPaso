@@ -1,12 +1,13 @@
-import express, { Request, Response } from 'express';
+import app from "./app";
+import config from "./config";
+import prisma from "./prisma";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, World!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(config.app.port, async () => {
+  console.log('Listening on port %d', config.app.port);
+  try {
+    await prisma.$connect();
+    console.log('Connected to database');
+  } catch (error) {
+    throw new Error('Error connecting to database');
+  }
 });
