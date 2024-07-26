@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node dist/src/index.js",
+    "start": "npm run prisma:deploy && node dist/src/index.js",
     "build": "tsc",
     "dev": "nodemon --exec ts-node src/index.ts",
     "seed": "ts-node prisma/seed.ts"
