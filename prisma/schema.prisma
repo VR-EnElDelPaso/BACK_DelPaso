@@ -13,7 +13,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model recorridos_comprados {
-  id    Int     @id @default(autoincrement())
-  token  String?
+model user {
+  id            String @id @default(uuid())
+  account_number Int
+  name          String
+  display_name  BigInt
+  email         String
+  type          String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  user_tour_purchase user_tour_purchase[]
+}
+
+model user_tour_purchase {
+  id         String @id @default(uuid())
+  user       user     @relation(fields: [user_id], references: [id])
+  user_id    String
+  tour       tour     @relation(fields: [tour_id], references: [id])
+  tour_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model tour {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  price       Decimal   @db.Decimal(10, 2)
+  url         String
+  image_url   String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  user_tour_purchase user_tour_purchase[]
 }
