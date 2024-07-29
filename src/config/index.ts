@@ -13,7 +13,7 @@ const config: EnvConfig = {
   passport: {
     strategy: process.env.PASSPORT_STRATEGY!,
     saml: {
-      issuer: `http://localhost${process.env.SAML_ISSUER}`,
+      issuer: process.env.SAML_ISSUER!,
       entryPoint: process.env.SAML_ENTRY_POINT!,
       logoutUrl: process.env.SAML_LOGOUT_URL!,
 
