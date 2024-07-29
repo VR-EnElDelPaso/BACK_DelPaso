@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { EnvConfig } from "../types";
+import fs from 'fs';
 
 dotenv.config();
 
@@ -19,10 +20,10 @@ export  const production: EnvConfig = {
       logoutUrl: "https://wayf.ucol.mx/saml2/idp/SingleLogoutService.php",
       logoutCallbackUrl: `"http://localhost:${port}/api/auth/logout/callback`,
       issuer: "http://localhost/20166932",
-      decryptionPvk: process.env.SAML_DECRYPTION_PVK!,
-      privateKey: process.env.SAML_PRIVATE_KEY!,
-      idpCert: process.env.SAML_IDP_CERT!,
-      publicCert: process.env.SAML_PUBLIC_CERT!,
+      decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf-8'),
+      privateKey: fs.readFileSync('./certs/key.pem', 'utf-8'),
+      idpCert: fs.readFileSync('./certs/idp.crt', 'utf-8'),
+      publicCert: fs.readFileSync('./certs/cert.pem', 'utf-8'),
     },
   }
 }
