@@ -39,7 +39,7 @@ app.use(morgan("dev"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/Metadata" ,metadataRoutes);
-app.use("/Tour", tourRoutes);
+//app.use("/Tour", tourRoutes);
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
