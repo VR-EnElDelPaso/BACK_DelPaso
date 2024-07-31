@@ -1,14 +1,31 @@
-import { development, production } from "./environments";
-import { Environment } from "./types";
+import fs from 'fs';
+import { EnvConfig } from "./types";
+import dotenv from 'dotenv';
 
+dotenv.config();
 
-const env = process.env.NODE_ENV as Environment || 'development';
+const config: EnvConfig = {
+  app: {
+    env: process.env.NODE_ENV!,
+    port: Number(process.env.PORT!),
+    clientUrl: process.env.CLIENT_URL!,
+  },
+  passport: {
+    strategy: process.env.PASSPORT_STRATEGY!,
+    saml: {
+      issuer: process.env.SAML_ISSUER!,
+      entryPoint: process.env.SAML_ENTRY_POINT!,
+      logoutUrl: process.env.SAML_LOGOUT_URL!,
 
-const config = {
-  development,
-  //todo: add test configurations
-  production,
-  test: development,
-} [env];
+      callbackUrl: `${process.env.HOST_URL}${process.env.SAML_CALLBACK_URL}`,
+      logoutCallbackUrl: `${process.env.HOST_URL}${process.env.SAML_LOGOUT_CALLBACK_URL}`,
+      
+      decryptionPvk: fs.readFileSync('./certs/key.pem', 'utf-8'),
+      privateKey: fs.readFileSync('./certs/key.pem', 'utf-8'),
+      idpCert: fs.readFileSync('./certs/idp.crt', 'utf-8'),
+      publicCert: fs.readFileSync('./certs/cert.pem', 'utf-8'),
+    },
+  }
+}
 
 export default config;
