@@ -21,7 +21,12 @@ export interface AppConfig {
   clientUrl: string;
 }
 
+export interface MPConfig {
+  access_token: string;
+}
+
 export interface EnvConfig {
   app: AppConfig;
+  mercadopago: MPConfig;
   passport: PassportConfig;
 }
