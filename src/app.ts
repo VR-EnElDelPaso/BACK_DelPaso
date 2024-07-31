@@ -9,6 +9,8 @@ import passportInstance from "./passport";
 import config from "./config";
 import authRoutes from "./routes/auth.routes";
 import metadataRoutes from "./routes/metadata.routes";
+import tourRoutes from "./routes/tour.routes";
+import preferenceRoutes from "./routes/preference.routes";
 import { AuthMiddleware } from "./middlewares";
 
 const app = express();
@@ -38,6 +40,8 @@ app.use(morgan("dev"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/Metadata" ,metadataRoutes);
+app.use("/api/tour", tourRoutes);
+app.use("/api/preference", preferenceRoutes);
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));

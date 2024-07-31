@@ -2,13 +2,19 @@ import fs from 'fs';
 import { EnvConfig } from "./types";
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({
+  // just in case the .env file is not in the root directory
+  path: '.env'
+});
 
 const config: EnvConfig = {
   app: {
     env: process.env.NODE_ENV!,
     port: Number(process.env.PORT!),
     clientUrl: process.env.CLIENT_URL!,
+  },
+  mercadopago: {
+    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN!,
   },
   passport: {
     strategy: process.env.PASSPORT_STRATEGY!,
