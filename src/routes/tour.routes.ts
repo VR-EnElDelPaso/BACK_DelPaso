@@ -3,7 +3,7 @@ import prisma from "../prisma";
 
 const router = Router();
 
-router.get('/tours', async(req: Request, res: Response) =>{
+router.get('/', async(req: Request, res: Response) =>{
     try {
         const tours = await prisma.tour.findMany();
         res.json(tours);
@@ -12,7 +12,7 @@ router.get('/tours', async(req: Request, res: Response) =>{
     }
 })
 
-router.get("/tour/:id", async(req: Request, res: Response) =>{
+router.get("/:id", async(req: Request, res: Response) =>{
     const { id } = req.params;
     try {
         const tour = await prisma.tour.findUnique({

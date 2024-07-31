@@ -2,7 +2,10 @@ import fs from 'fs';
 import { EnvConfig } from "./types";
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({
+  // just in case the .env file is not in the root directory
+  path: '.env'
+});
 
 const config: EnvConfig = {
   app: {
