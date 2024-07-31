@@ -13,6 +13,9 @@ const config: EnvConfig = {
     port: Number(process.env.PORT!),
     clientUrl: process.env.CLIENT_URL!,
   },
+  mercadopago: {
+    access_token: process.env.MERCADO_PAGO_ACCESS_TOKEN!,
+  },
   passport: {
     strategy: process.env.PASSPORT_STRATEGY!,
     saml: {
