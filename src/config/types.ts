@@ -17,7 +17,7 @@ export interface PassportConfig {
 
 export interface AppConfig {
   port: number;
-  env: Environment;
+  env: string;
   clientUrl: string;
 }
 
@@ -25,5 +25,3 @@ export interface EnvConfig {
   app: AppConfig;
   passport: PassportConfig;
 }
-
-export type Environment = "development" | "production" | "test";
