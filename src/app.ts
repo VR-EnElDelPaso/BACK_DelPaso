@@ -42,6 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/Metadata" ,metadataRoutes);
 app.use("/api/tour", tourRoutes);
 app.use("/api/preference", preferenceRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));

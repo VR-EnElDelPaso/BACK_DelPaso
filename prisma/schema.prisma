@@ -18,7 +18,8 @@ model user {
   account_number     Int
   name               String
   display_name       String
-  email              String
+  email              String               @unique
+  password           String?
   type               String
   created_at         DateTime             @default(now())
   updated_at         DateTime             @updatedAt
