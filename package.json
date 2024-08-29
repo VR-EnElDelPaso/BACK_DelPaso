@@ -8,6 +8,7 @@
     "start": "npm run prisma:deploy && node dist/src/index.js",
     "build": "tsc",
     "dev": "nodemon --exec ts-node src/index.ts",
+    "migrate": "npx prisma migrate dev",
     "seed": "ts-node prisma/seed.ts",
     "prisma:deploy": "npx prisma migrate deploy && prisma generate"
   },
