@@ -30,8 +30,8 @@ router.get("/login/fail", (req: Request, res: Response) =>
 );
 
 // login endpoints para autenticación local
-router.post('/login/local', passportInstance.authenticate('local', { failureRedirect: '/login/fail', failureFlash: true }), (req: Request, res: Response) => {
-  res.redirect(clientUrl);
+router.post('/login/local', passportInstance.authenticate('local'), (req: Request, res: Response) => {
+  res.status(200).json({ok: true, message: 'login successfully'})
 });
 
 // logout endpoints

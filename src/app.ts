@@ -21,16 +21,23 @@ app.use( // session configuration
     secret: process.env.SESSIONS_SECRET!,
     saveUninitialized: true,
     resave: true,
+    cookie: {
+      httpOnly: true,
+      secure: config.app.env === "production"
+    }
   })
 );
+
 app.use((err: any, req: Request, res: Response, next: NextFunction) => { // error handling
   console.log("Fatal error: " + JSON.stringify(err));
   next(err);
 });
+
 app.use(cors({
   origin: config.app.clientUrl,
   credentials: true, // allow cookies
 }));
+
 app.use(passportInstance.initialize());
 app.use(passportInstance.session());
 app.use(express.json());
@@ -42,7 +49,6 @@ app.use("/api/auth", authRoutes);
 app.use("/Metadata" ,metadataRoutes);
 app.use("/api/tour", tourRoutes);
 app.use("/api/preference", preferenceRoutes);
-app.use("/auth", authRoutes);
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
