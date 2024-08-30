@@ -29,6 +29,11 @@ router.get("/login/fail", (req: Request, res: Response) =>
   res.status(401).send("Login failed")
 );
 
+// login endpoints para autenticación local
+router.post('/login/local', passportInstance.authenticate('local'), (req: Request, res: Response) => {
+  res.status(200).json({ok: true, message: 'login successfully'})
+});
+
 // logout endpoints
 router.get("/logout", AuthMiddleware, (req: any, res: Response, next: NextFunction) => {
   samlStrategy.logout(req, (err, url) => {
@@ -88,5 +93,6 @@ router.get("/status", (req: Request, res: Response) => {
     res.status(401).json({ isAuthenticated: false });
   }
 });
+
 
 export default router;
