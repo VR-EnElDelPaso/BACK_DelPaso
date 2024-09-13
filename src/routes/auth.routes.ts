@@ -1,8 +1,10 @@
 // dependencies
 import { NextFunction, Request, Response, Router } from 'express';
-import passportInstance, { samlStrategy } from '../passport';
+import {generateToken, passportInstance ,samlStrategy } from '../passport';
 import { AuthMiddleware } from '../middlewares';
 import config from '../config';
+import { user } from '@prisma/client';
+import UserWithoutPassword from '../types/auth/UserWithoutPassword';
 
 
 const router = Router();
@@ -28,10 +30,16 @@ router.post('/login/callback', passportInstance.authenticate('saml', { failureRe
 router.get("/login/fail", (req: Request, res: Response) =>
   res.status(401).send("Login failed")
 );
+let x: UserWithoutPassword
 
 // login endpoints para autenticación local
-router.post('/login/local', passportInstance.authenticate('local'), (req: Request, res: Response) => {
-  res.status(200).json({ok: true, message: 'login successfully'})
+router.post('/login/local', passportInstance.authenticate('local', { session: false }), (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ ok: false, message: 'User not authenticated' });
+  }
+
+  const token = generateToken(req.user as UserWithoutPassword);
+  res.status(200).json({ ok: true, message: 'Login successful', token });
 });
 
 // logout endpoints
@@ -83,6 +91,10 @@ router.post("/logout/callback", (req: Request, res: Response, next: NextFunction
   } catch (error) {
     return next(error);
   }
+});
+
+router.get('/protected', passportInstance.authenticate('jwt', { session: false }), (req: Request, res: Response) => {
+  res.json({ message: 'This is a protected route', user: req.user });
 });
 
 // Auth status endpoint

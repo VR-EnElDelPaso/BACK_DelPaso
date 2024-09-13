@@ -5,7 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 // local
-import passportInstance from "./passport";
+import {passportInstance} from "./passport";
 import config from "./config";
 import authRoutes from "./routes/auth.routes";
 import metadataRoutes from "./routes/metadata.routes";

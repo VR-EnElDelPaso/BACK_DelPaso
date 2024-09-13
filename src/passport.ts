@@ -1,11 +1,19 @@
 import passport from "passport";
 import { Strategy as SamlStrategy, VerifyWithoutRequest } from "@node-saml/passport-saml";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as JwtStrategy, ExtractJwt, VerifyCallback } from 'passport-jwt';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, user } from "@prisma/client";
 import config from "./config";
+import UserWithoutPassword from "./types/auth/UserWithoutPassword";
 
 const prisma = new PrismaClient();
+
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET || 'your-default-secret' // Proporciona un valor por defecto
+};
 
 // SAML strategy callbacks
 const signOnVerifyCallback: VerifyWithoutRequest = (profile, done) =>
@@ -19,6 +27,44 @@ export const samlStrategy = new SamlStrategy(
   signOnVerifyCallback,
   logOutVerifyCallback
 );
+
+// JWT strategy
+
+type TypedVerifyCallback = (
+  error: Error | null,
+  user?: UserWithoutPassword | false,
+  info?: { message: string }
+) => void;
+
+const jwtStrategy = new JwtStrategy(jwtOptions, async (payload: JwtPayload, done: TypedVerifyCallback) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
+      return done(null, userWithoutPassword);
+    }
+    return done(null, false);
+  } catch (error) {
+    return done(error as Error);
+  }
+});
+
+
+const generateToken = (user: UserWithoutPassword): string => {
+  const secret = process.env.JWT_SECRET;
+
+  // Verificar si JWT_SECRET está definido en producción
+  if (process.env.NODE_ENV === 'production' && !secret) {
+    throw new Error('JWT_SECRET must be defined in production');
+  }
+
+  // Usar un secreto por defecto solo en desarrollo
+  const jwtSecret = secret || 'development-secret';
+
+  const payload = user as JwtPayload;
+
+  return jwt.sign(payload, jwtSecret, { expiresIn: '1d' });
+};
 
 // Local strategy
 const localStrategy = new LocalStrategy(
@@ -63,41 +109,7 @@ passportInstance.deserializeUser((user: any, done) => done(null, user));
 
 passportInstance.use(samlStrategy);
 passportInstance.use(localStrategy);
+passportInstance.use(jwtStrategy);
 
-export default passportInstance;
-
-interface Profile {
-  issuer: string;
-  inResponseTo: string;
-  sessionIndex: string;
-  nameID: string;
-  nameIDFormat: string;
-  spNameQualifier: string;
-  uCorreo: string;
-  uNombre: string;
-  uDependencia: string;
-  uCuenta: string;
-  uTipo: string;
-  cn: string;
-  sn: string;
-  displayName: string;
-  TipoCuenta: string;
-  UO: string;
-  ImmutableID: string;
-  attributes: Attributes;
-}
-
-export interface Attributes {
-  uCorreo: string;
-  uNombre: string;
-  uDependencia: string;
-  uCuenta: string;
-  uTipo: string;
-  cn: string;
-  sn: string;
-  displayName: string;
-  TipoCuenta: string;
-  UO: string;
-  ImmutableID: string;
-}
+export { passportInstance, generateToken };
 
