@@ -1,28 +1,52 @@
 import passport from "passport";
 import { Strategy as SamlStrategy, VerifyWithoutRequest } from "@node-saml/passport-saml";
-import { Strategy as JwtStrategy, ExtractJwt} from 'passport-jwt';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { PrismaClient, user } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import config from "./config";
 import UserWithoutPassword from "./types/auth/UserWithoutPassword";
 import TypedVerifyCallback from "./types/auth/JwtVerifyCallback";
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 
-// --- SAML ---
+// --- Local ---
+const localStrategy = new LocalStrategy(
+  {
+    usernameField: "email",
+    passwordField: "password",
+  },
+  async (email: string, password: string, done: TypedVerifyCallback) => {
+    try {
+      // Buscar al usuario por su email
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+        },
+      });
 
-// SAML strategy callbacks
-const signOnVerifyCallback: VerifyWithoutRequest = (profile, done) =>
-  done(null, profile as Record<string, unknown>);
-const logOutVerifyCallback: VerifyWithoutRequest = (profile, done) =>
-  done(null, profile as Record<string, unknown>);
+      if (!user || !user.password) {
+        return done(null, false, { message: "Password is not set for this user." });
+      }
 
-// SAML strategy
-const samlStrategy = new SamlStrategy(
-  config.passport.saml,
-  signOnVerifyCallback,
-  logOutVerifyCallback
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordValid) {
+        return done(null, false, { message: "Incorrect password." });
+      }
+
+      const { password: _, ...userWithoutPassword } = user;
+
+      return done(null, userWithoutPassword as UserWithoutPassword);
+    } catch (error) {
+      return done(error as Error);
+    }
+  }
 );
 
 
@@ -60,11 +84,29 @@ const generateToken = (user: UserWithoutPassword): string => {
   return jwt.sign(payload, jwtSecret, { expiresIn: '1d' });
 };
 
+
+
+// --- SAML ---
+
+// SAML strategy callbacks
+const signOnVerifyCallback: VerifyWithoutRequest = (profile, done) =>
+  done(null, profile as Record<string, unknown>);
+const logOutVerifyCallback: VerifyWithoutRequest = (profile, done) =>
+  done(null, profile as Record<string, unknown>);
+
+// SAML strategy
+const samlStrategy = new SamlStrategy(
+  config.passport.saml,
+  signOnVerifyCallback,
+  logOutVerifyCallback
+);
+
 // passport configuration
 const passportInstance = passport;
 passportInstance.serializeUser((user, done) => done(null, user));
 passportInstance.deserializeUser((user: any, done) => done(null, user));
 
+passportInstance.use(localStrategy);
 passportInstance.use(samlStrategy);
 passportInstance.use(jwtStrategy);
 
