@@ -21,14 +21,7 @@ const localStrategy = new LocalStrategy(
   async (email: string, password: string, done: TypedVerifyCallback) => {
     try {
       // Buscar al usuario por su email
-      const user = await prisma.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          email: true,
-          password: true,
-        },
-      });
+      const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user || !user.password) {
         return done(null, false, { message: "Password is not set for this user." });
@@ -73,15 +66,12 @@ const jwtStrategy = new JwtStrategy(jwtOptions, async (payload: JwtPayload, done
 const generateToken = (user: UserWithoutPassword): string => {
   const secret = process.env.JWT_SECRET;
 
-  // verificar que el secreto esté definido en producción
   if (process.env.NODE_ENV === 'production' && !secret) {
     throw new Error('JWT_SECRET must be defined in production');
   }
 
-  // Usar un secreto por defecto solo en desarrollo
   const jwtSecret = secret || 'development-secret';
-  const payload = user as JwtPayload;
-  return jwt.sign(payload, jwtSecret, { expiresIn: '1d' });
+  return jwt.sign(user, jwtSecret, { expiresIn: '1d' });
 };
 
 

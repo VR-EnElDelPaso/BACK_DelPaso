@@ -7,6 +7,7 @@ import UserWithoutPassword from '../types/auth/UserWithoutPassword';
 import passportInstance, { generateToken, samlStrategy } from '../passport';
 import { AuthMiddleware } from '../middlewares';
 import config from '../config';
+import ResponseData from '../types/auth/ResponseData';
 
 const router = Router();
 const { clientUrl } = config.app;
@@ -17,11 +18,16 @@ const { clientUrl } = config.app;
 // local auth login
 router.post('/login/local', passportInstance.authenticate('local', { session: false }), (req: Request, res: Response) => {
   if (!req.user) {
-    return res.status(401).json({ ok: false, message: 'User not authenticated' });
+    return res.status(401).json({ ok: false, message: 'User not authenticated' } as ResponseData);
   }
 
   const token = generateToken(req.user as UserWithoutPassword);
-  res.status(200).json({ ok: true, message: 'Login successful', token });
+  const response: ResponseData = {
+    ok: true,
+    message: 'Login successful',
+    data: { token }
+  };
+  res.status(200).json(response);
 });
 
 // saml login
