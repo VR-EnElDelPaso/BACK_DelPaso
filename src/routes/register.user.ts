@@ -5,24 +5,41 @@ import bcrypt from "bcryptjs";
 const router = Router();
 
 router.post("/register", async (req: Request, res: Response)=>{
-    const {account_number, name, display_name, email, password, type} = req.body;
-    
-    if (!account_number || !name || !display_name || !email || !password || !type) {
-        return res.status(400).json({ error: 'Todos los campos son necesarios' });
+    const {account_number, name, display_name, email, password, role} = req.body;
+
+    if (!name || !display_name || !email || !password || !role) {
+        return res.status(400).json({ error: 'All fields are required' });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Formato invalido' });
+        return res.status(400).json({ error: 'Enter a valid email address' });
+    }
+
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+            error: 'Password must be at least 8 characters long and include both letters and numbers',
+        });
     }
 
     try {
-        const existingUser = await prisma.user.findUnique({
-            where: { account_number },
-        });
+        let existingUser;
+        if(role === "STUDENT"){
+            if (!account_number) {
+                throw new Error("Account number is missing");
+            }
+            existingUser = await prisma.user.findUnique({
+                where: { account_number },
+            });
+        }else{
+             existingUser = await prisma.user.findUnique({
+                where: { email },
+            });
+        }
         
         if (existingUser) {
-            return res.status(400).json({ error: '' });
+            return res.status(400).json({ error: 'User registration failed' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,7 +51,7 @@ router.post("/register", async (req: Request, res: Response)=>{
                 display_name,
                 email,
                 password: hashedPassword,
-                type
+                role
             }
         });
         res.status(201).json(user);
