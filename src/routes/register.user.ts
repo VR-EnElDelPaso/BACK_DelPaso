@@ -25,6 +25,7 @@ router.post("/register", async (req: Request, res: Response)=>{
 
     try {
         let existingUser;
+        
         if(role === "STUDENT"){
             if (!account_number) {
                 throw new Error("Account number is missing");
