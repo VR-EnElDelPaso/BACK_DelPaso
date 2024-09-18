@@ -50,7 +50,7 @@ app.use("/api/auth", authRoutes);
 app.use("/Metadata" ,metadataRoutes);
 app.use("/api/tour", tourRoutes);
 app.use("/api/preference", preferenceRoutes);
-app.use("/register", registerUserRoutes);
+app.use("/register", registerUserRoutes); //Register
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
