@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 const router = Router();
 
-router.post("/register", async (req: Request, res: Response)=>{
+router.post("/new", async (req: Request, res: Response)=>{
     const {account_number, name, display_name, email, password, role} = req.body;
 
     if (!name || !display_name || !email || !password || !role) {
@@ -57,6 +57,8 @@ router.post("/register", async (req: Request, res: Response)=>{
         });
         res.status(201).json(user);
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({ error: 'Error creating user' });
     }
 });
