@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -17,7 +17,7 @@ async function main() {
         name: 'Miguel Angel',
         display_name: 'Miguel',
         email: 'miguel@example.com',
-        type: 'Estudiante',
+        role: Role.UCOL_STUDENT,
         password: bcrypt.hashSync('password'),
       },
     }),
@@ -27,7 +27,7 @@ async function main() {
         name: 'Ana García',
         display_name: 'Ana',
         email: 'ana@example.com',
-        type: 'Estudiante',
+        role: Role.UCOL_EMPLOYEE,
         password: bcrypt.hashSync('password'),
       },
     }),
@@ -37,7 +37,7 @@ async function main() {
         name: 'Carlos Rodríguez',
         display_name: 'Carlos',
         email: 'carlos@example.com',
-        type: 'Visitante',
+        role: Role.VISITOR,
       },
     }),
     prisma.user.create({
@@ -46,7 +46,7 @@ async function main() {
         name: 'Laura Martínez',
         display_name: 'Laura',
         email: 'laura@example.com',
-        type: 'Visitante',
+        role: Role.ADMIN,
       },
     }),
   ]);
