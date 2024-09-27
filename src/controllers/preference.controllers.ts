@@ -4,11 +4,11 @@ import { RequestHandler, Request, Response } from "express";
 import prisma from "../prisma";
 import mpClient from "../mercadopago";
 import { createPreference, createPreferences } from "../services/preference.services";
-import { ok } from "assert";
-import { error } from "console";
+import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
 
 export const createPreferenceController: RequestHandler = async (req: Request, res: Response) => {
   const { tour_id } = req.params;
+  console.log(333)
 
   try {
     const tour = await prisma.tour.findUnique({ where: { id: tour_id } });
@@ -24,9 +24,14 @@ export const createPreferenceController: RequestHandler = async (req: Request, r
   }
 }
 
-//
+// todo: refactorizar concepto de carrito hacerlo mas generico
+
 export const createPreferencesController: RequestHandler = async (req: Request, res: Response) => {
   const { cart } = req.body;
+  console.log(cart);
+
+
+
   try {
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({ ok: false, error: "Empty cart." });
@@ -42,7 +47,7 @@ export const createPreferencesController: RequestHandler = async (req: Request, 
       return res.status(404).json({ ok: false, error: 'One or more tours were not found.' });
     }
 
-    const updatedCart = cart.map(cartItem => {
+    const preferenceItems: PreferenceCreateData["body"]["items"] = cart.map(cartItem => {
       const tour = tours.find(t => t.id === cartItem.id);
     
       if (!tour) {
@@ -51,13 +56,13 @@ export const createPreferencesController: RequestHandler = async (req: Request, 
     
       return {
         id: tour.id,
-        name: tour.name,
-        price: Number(tour.price),
-        quantity: cartItem.quantity,
+        title: tour.name,
+        unit_price: Number(tour.price),
+        quantity: cartItem.quantity ?? 1,
       };
     });
     
-    const preference = await createPreferences(updatedCart, mpClient);
+    const preference = await createPreferences(preferenceItems, mpClient);
     return res.status(201).json({ ok: true, preferenceId: preference.id });
   } catch (error) {
     console.error('Error creating preference', error);

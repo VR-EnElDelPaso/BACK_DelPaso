@@ -14,19 +14,20 @@ datasource db {
 }
 
 enum Role {
-  ASPIRANT
   STUDENT
+  WORKER
+  VISITOR
   ADMIN
 }
 
 model user {
   id                 String               @id @default(uuid())
-  account_number     Int?                  @unique
+  account_number     Int?                 @unique
   name               String
   display_name       String
   email              String               @unique
   password           String?
-  role               Role             @default(ASPIRANT)
+  role               Role                 @default(VISITOR)
   created_at         DateTime             @default(now())
   updated_at         DateTime             @updatedAt
   emailVerified      DateTime?
