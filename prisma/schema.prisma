@@ -14,8 +14,8 @@ datasource db {
 }
 
 enum Role {
-  UCOL_STUDENT
-  UCOL_EMPLOYEE
+  STUDENT
+  WORKER
   VISITOR
   ADMIN
 }
