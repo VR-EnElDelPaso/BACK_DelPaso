@@ -1,21 +1,23 @@
 
 import { RequestHandler, Request, Response } from "express";
 
+import { z } from "zod";
+
 import prisma from "../prisma";
 import mpClient from "../mercadopago";
 import { createPreference, createPreferences } from "../services/preference.services";
 import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
+import { ResponseData } from '../types/ResponseData';
 
 export const createPreferenceController: RequestHandler = async (req: Request, res: Response) => {
   const { tour_id } = req.params;
-  console.log(333)
 
   try {
     const tour = await prisma.tour.findUnique({ where: { id: tour_id } });
     if (!tour) {
       return res.status(404).json({ ok: false, error: 'Tour not found' });
     }
-    
+
     const preference = await createPreference(tour, mpClient);
     return res.status(201).json({ ok: true, preferenceId: preference.id });
   } catch (error) {
@@ -24,48 +26,53 @@ export const createPreferenceController: RequestHandler = async (req: Request, r
   }
 }
 
-// todo: refactorizar concepto de carrito hacerlo mas generico
+
+const ItemIds = z.array(z.string());
 
 export const createPreferencesController: RequestHandler = async (req: Request, res: Response) => {
-  const { cart } = req.body;
-  console.log(cart);
+  // Validate type of item_ids
+  const result = ItemIds.safeParse(req.body.item_ids);
+  if (!result.success) return res.status(400).json({
+    ok: false,
+    message: 'Invalid item_ids',
+  } as ResponseData);
 
-
-
+  const itemIds = result.data;
   try {
-    if (!cart || !Array.isArray(cart) || cart.length === 0) {
-      return res.status(400).json({ ok: false, error: "Empty cart." });
-    }
-
-    const toursId = cart.map(item => item.id);
-
-    const tours = await prisma.tour.findMany({
-      where: { id: { in: toursId } }
+    // Find tours using itemIds
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { in: itemIds } }
     });
+    if (foundTours.length !== itemIds.length) return res.status(404).json({
+      ok: false,
+      message: 'One or more tours were not found.'
+    } as ResponseData);
 
-    if (tours.length !== toursId.length) {
-      return res.status(404).json({ ok: false, error: 'One or more tours were not found.' });
-    }
-
-    const preferenceItems: PreferenceCreateData["body"]["items"] = cart.map(cartItem => {
-      const tour = tours.find(t => t.id === cartItem.id);
-    
-      if (!tour) {
-        throw new Error(`Tour with id ${cartItem.id} not found.`);
-      }
-    
-      return {
-        id: tour.id,
-        title: tour.name,
-        unit_price: Number(tour.price),
-        quantity: cartItem.quantity ?? 1,
-      };
-    });
-    
+    // Based on found tours, create preference items and then create preferences
+    const preferenceItems: PreferenceCreateData["body"]["items"] = foundTours.map(tour => ({
+      id: tour.id,
+      title: tour.name,
+      unit_price: Number(tour.price),
+      quantity: 1,
+    }));
     const preference = await createPreferences(preferenceItems, mpClient);
-    return res.status(201).json({ ok: true, preferenceId: preference.id });
+
+    // Happy path Response
+    const response: ResponseData = {
+      ok: true,
+      message: 'Preferences created',
+      data: preference.id
+    };
+    return res.status(201).json(response);
   } catch (error) {
+
+    // Error path Response
     console.error('Error creating preference', error);
-    return res.status(500).json({ ok: false, error: 'Error creating preference' });
+    const response: ResponseData = {
+      ok: false,
+      message: 'Error creating preference',
+      data: error
+    };
+    return res.status(500).json(response);
   }
 }
