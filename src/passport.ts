@@ -1,44 +1,28 @@
 import passport from "passport";
 import { Strategy as SamlStrategy, VerifyWithoutRequest } from "@node-saml/passport-saml";
-import { Strategy as LocalStrategy } from "passport-local";
-import bcrypt from "bcryptjs";
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { PrismaClient } from "@prisma/client";
 import config from "./config";
+import UserWithoutPassword from "./types/auth/UserWithoutPassword";
+import TypedVerifyCallback from "./types/auth/JwtVerifyCallback";
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// SAML strategy callbacks
-const signOnVerifyCallback: VerifyWithoutRequest = (profile, done) =>
-  done(null, profile as Record<string, unknown>);
-const logOutVerifyCallback: VerifyWithoutRequest = (profile, done) =>
-  done(null, profile as Record<string, unknown>);
 
-// SAML strategy
-export const samlStrategy = new SamlStrategy(
-  config.passport.saml,
-  signOnVerifyCallback,
-  logOutVerifyCallback
-);
-
-// Local strategy
+// --- Local ---
 const localStrategy = new LocalStrategy(
   {
     usernameField: "email",
     passwordField: "password",
   },
-  async (email: string, password: string, done: (error: any, user?: any, info?: any) => void) => {
+  async (email: string, password: string, done: TypedVerifyCallback) => {
     try {
       // Buscar al usuario por su email
-      const user = await prisma.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          email: true,
-          password: true, // Incluimos el campo password
-        },
-      });
+      const user = await prisma.user.findUnique({ where: { email } });
 
-      // Verifica que el usuario y la contraseña no sean nulos o indefinidos
       if (!user || !user.password) {
         return done(null, false, { message: "Password is not set for this user." });
       }
@@ -49,11 +33,62 @@ const localStrategy = new LocalStrategy(
         return done(null, false, { message: "Incorrect password." });
       }
 
-      return done(null, user);
+      const { password: _, ...userWithoutPassword } = user;
+
+      return done(null, userWithoutPassword as UserWithoutPassword);
     } catch (error) {
-      return done(error);
+      return done(error as Error);
     }
   }
+);
+
+
+// --- JWT ---
+
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET || 'your-default-secret'
+};
+
+const jwtStrategy = new JwtStrategy(jwtOptions, async (payload: JwtPayload, done: TypedVerifyCallback) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
+      return done(null, userWithoutPassword);
+    }
+    return done(null, false);
+  } catch (error) {
+    return done(error as Error);
+  }
+});
+
+const generateToken = (user: UserWithoutPassword): string => {
+  const secret = process.env.JWT_SECRET;
+
+  if (process.env.NODE_ENV === 'production' && !secret) {
+    throw new Error('JWT_SECRET must be defined in production');
+  }
+
+  const jwtSecret = secret || 'development-secret';
+  return jwt.sign(user, jwtSecret, { expiresIn: '1d' });
+};
+
+
+
+// --- SAML ---
+
+// SAML strategy callbacks
+const signOnVerifyCallback: VerifyWithoutRequest = (profile, done) =>
+  done(null, profile as Record<string, unknown>);
+const logOutVerifyCallback: VerifyWithoutRequest = (profile, done) =>
+  done(null, profile as Record<string, unknown>);
+
+// SAML strategy
+const samlStrategy = new SamlStrategy(
+  config.passport.saml,
+  signOnVerifyCallback,
+  logOutVerifyCallback
 );
 
 // passport configuration
@@ -61,43 +96,10 @@ const passportInstance = passport;
 passportInstance.serializeUser((user, done) => done(null, user));
 passportInstance.deserializeUser((user: any, done) => done(null, user));
 
-passportInstance.use(samlStrategy);
 passportInstance.use(localStrategy);
+passportInstance.use(samlStrategy);
+passportInstance.use(jwtStrategy);
 
 export default passportInstance;
-
-interface Profile {
-  issuer: string;
-  inResponseTo: string;
-  sessionIndex: string;
-  nameID: string;
-  nameIDFormat: string;
-  spNameQualifier: string;
-  uCorreo: string;
-  uNombre: string;
-  uDependencia: string;
-  uCuenta: string;
-  uTipo: string;
-  cn: string;
-  sn: string;
-  displayName: string;
-  TipoCuenta: string;
-  UO: string;
-  ImmutableID: string;
-  attributes: Attributes;
-}
-
-export interface Attributes {
-  uCorreo: string;
-  uNombre: string;
-  uDependencia: string;
-  uCuenta: string;
-  uTipo: string;
-  cn: string;
-  sn: string;
-  displayName: string;
-  TipoCuenta: string;
-  UO: string;
-  ImmutableID: string;
-}
+export { generateToken, samlStrategy };
 
