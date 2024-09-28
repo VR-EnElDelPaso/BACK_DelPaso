@@ -1,9 +1,13 @@
 
 import { RequestHandler, Request, Response } from "express";
 
+import { z } from "zod";
+
 import prisma from "../prisma";
 import mpClient from "../mercadopago";
-import { createPreference } from "../services/preference.services";
+import { createPreference, createPreferences } from "../services/preference.services";
+import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
+import { ResponseData } from '../types/ResponseData';
 
 export const createPreferenceController: RequestHandler = async (req: Request, res: Response) => {
   const { tour_id } = req.params;
@@ -13,11 +17,62 @@ export const createPreferenceController: RequestHandler = async (req: Request, r
     if (!tour) {
       return res.status(404).json({ ok: false, error: 'Tour not found' });
     }
-    
+
     const preference = await createPreference(tour, mpClient);
     return res.status(201).json({ ok: true, preferenceId: preference.id });
   } catch (error) {
     console.error('Error creating preference', error);
     return res.status(500).json({ ok: false, error: 'Error creating preference' });
+  }
+}
+
+
+const ItemIds = z.array(z.string());
+
+export const createPreferencesController: RequestHandler = async (req: Request, res: Response) => {
+  // Validate type of item_ids
+  const result = ItemIds.safeParse(req.body.item_ids);
+  if (!result.success) return res.status(400).json({
+    ok: false,
+    message: 'Invalid item_ids',
+  } as ResponseData);
+
+  const itemIds = result.data;
+  try {
+    // Find tours using itemIds
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { in: itemIds } }
+    });
+    if (foundTours.length !== itemIds.length) return res.status(404).json({
+      ok: false,
+      message: 'One or more tours were not found.'
+    } as ResponseData);
+
+    // Based on found tours, create preference items and then create preferences
+    const preferenceItems: PreferenceCreateData["body"]["items"] = foundTours.map(tour => ({
+      id: tour.id,
+      title: tour.name,
+      unit_price: Number(tour.price),
+      quantity: 1,
+    }));
+    const preference = await createPreferences(preferenceItems, mpClient);
+
+    // Happy path Response
+    const response: ResponseData = {
+      ok: true,
+      message: 'Preferences created',
+      data: preference.id
+    };
+    return res.status(201).json(response);
+  } catch (error) {
+
+    // Error path Response
+    console.error('Error creating preference', error);
+    const response: ResponseData = {
+      ok: false,
+      message: 'Error creating preference',
+      data: error
+    };
+    return res.status(500).json(response);
   }
 }
