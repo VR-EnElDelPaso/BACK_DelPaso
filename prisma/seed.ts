@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -17,7 +17,7 @@ async function main() {
         name: 'Miguel Angel',
         display_name: 'Miguel',
         email: 'miguel@example.com',
-        type: 'Estudiante',
+        role: 'STUDENT',
         password: bcrypt.hashSync('password'),
       },
     }),
@@ -27,7 +27,7 @@ async function main() {
         name: 'Ana García',
         display_name: 'Ana',
         email: 'ana@example.com',
-        type: 'Estudiante',
+        role: 'STUDENT',
         password: bcrypt.hashSync('password'),
       },
     }),
@@ -37,7 +37,7 @@ async function main() {
         name: 'Carlos Rodríguez',
         display_name: 'Carlos',
         email: 'carlos@example.com',
-        type: 'Visitante',
+        role: 'WORKER',
       },
     }),
     prisma.user.create({
@@ -46,7 +46,7 @@ async function main() {
         name: 'Laura Martínez',
         display_name: 'Laura',
         email: 'laura@example.com',
-        type: 'Visitante',
+        role: 'VISITOR',
       },
     }),
   ]);
@@ -58,8 +58,8 @@ async function main() {
         name: 'Tour por el centro histórico',
         description: 'Recorrido por los principales monumentos del centro de la ciudad',
         price: 25.99,
-        url: 'https://example.com/tour-centro',
-        image_url: 'https://example.com/images/centro.jpg',
+        url: 'https://placehold.co/400',
+        image_url: 'https://placehold.co/400',
       },
     }),
     prisma.tour.create({
@@ -67,8 +67,8 @@ async function main() {
         name: 'Ruta gastronómica',
         description: 'Degustación de platos típicos en los mejores restaurantes',
         price: 39.99,
-        url: 'https://example.com/tour-gastronomico',
-        image_url: 'https://example.com/images/gastronomia.jpg',
+        url: 'https://placehold.co/400',
+        image_url: 'https://placehold.co/400',
       },
     }),
     prisma.tour.create({
@@ -76,8 +76,8 @@ async function main() {
         name: 'Excursión a las montañas',
         description: 'Día completo de senderismo y paisajes naturales',
         price: 45.50,
-        url: 'https://example.com/tour-montanas',
-        image_url: 'https://example.com/images/montanas.jpg',
+        url: 'https://placehold.co/400',
+        image_url: 'https://placehold.co/400',
       },
     }),
     prisma.tour.create({
@@ -85,8 +85,8 @@ async function main() {
         name: 'Tour nocturno',
         description: 'Descubre la ciudad iluminada y sus leyendas',
         price: 30.00,
-        url: 'https://example.com/tour-nocturno',
-        image_url: 'https://example.com/images/nocturno.jpg',
+        url: 'https://placehold.co/400',
+        image_url: 'https://placehold.co/400',
       },
     }),
     prisma.tour.create({
@@ -94,8 +94,8 @@ async function main() {
         name: 'Visita a museos',
         description: 'Recorrido por los principales museos de la ciudad',
         price: 35.75,
-        url: 'https://example.com/tour-museos',
-        image_url: 'https://example.com/images/museos.jpg',
+        url: 'https://placehold.co/400',
+        image_url: 'https://placehold.co/400',
       },
     }),
   ]);
