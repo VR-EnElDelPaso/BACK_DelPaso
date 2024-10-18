@@ -51,6 +51,8 @@ async function main() {
     }),
   ]);
 
+  const tourUrl = "https://kuula.co/share/collection/7cp8f?logo=0&info=0&fs=1&vr=1&sd=1&initload=0&thumbs=1"
+
   // Crear 5 tours
   const tours = await Promise.all([
     prisma.tour.create({
@@ -58,7 +60,7 @@ async function main() {
         name: 'Tour por el centro histórico',
         description: 'Recorrido por los principales monumentos del centro de la ciudad',
         price: 25.99,
-        url: 'https://placehold.co/400',
+        url: tourUrl,
         image_url: 'https://placehold.co/400',
       },
     }),
@@ -67,7 +69,7 @@ async function main() {
         name: 'Ruta gastronómica',
         description: 'Degustación de platos típicos en los mejores restaurantes',
         price: 39.99,
-        url: 'https://placehold.co/400',
+        url: tourUrl,
         image_url: 'https://placehold.co/400',
       },
     }),
@@ -76,7 +78,7 @@ async function main() {
         name: 'Excursión a las montañas',
         description: 'Día completo de senderismo y paisajes naturales',
         price: 45.50,
-        url: 'https://placehold.co/400',
+        url: tourUrl,
         image_url: 'https://placehold.co/400',
       },
     }),
@@ -85,7 +87,7 @@ async function main() {
         name: 'Tour nocturno',
         description: 'Descubre la ciudad iluminada y sus leyendas',
         price: 30.00,
-        url: 'https://placehold.co/400',
+        url: tourUrl,
         image_url: 'https://placehold.co/400',
       },
     }),
@@ -94,7 +96,7 @@ async function main() {
         name: 'Visita a museos',
         description: 'Recorrido por los principales museos de la ciudad',
         price: 35.75,
-        url: 'https://placehold.co/400',
+        url: tourUrl,
         image_url: 'https://placehold.co/400',
       },
     }),
