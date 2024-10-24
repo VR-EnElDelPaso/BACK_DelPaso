@@ -8,16 +8,19 @@ import mpClient from "../mercadopago";
 import { createPreference, createPreferences } from "../services/preference.services";
 import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
 import { ResponseData } from '../types/ResponseData';
+import { generateAccessToken } from "../utils/generateTokenTour";
 
 export const createPreferenceController: RequestHandler = async (req: Request, res: Response) => {
   const { tour_id } = req.params;
+  //const user_id = req.user?.id;
 
   try {
     const tour = await prisma.tour.findUnique({ where: { id: tour_id } });
     if (!tour) {
       return res.status(404).json({ ok: false, error: 'Tour not found' });
     }
-
+    //Creacion de token para el recorrido
+    //const accessToken = generateAccessToken(user_id, tour_id);
     const preference = await createPreference(tour, mpClient);
     return res.status(201).json({ ok: true, preferenceId: preference.id });
   } catch (error) {
