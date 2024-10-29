@@ -6,7 +6,7 @@ import { AuthMiddleware } from "../middlewares";
 
 const router = Router();
 
-router.post("/multi", createPreferencesController);
+router.post("/multi", AuthMiddleware, createPreferencesController);
 
 router.post("/:tour_id", AuthMiddleware, createPreferenceController);
 
