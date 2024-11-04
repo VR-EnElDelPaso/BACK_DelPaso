@@ -50,6 +50,7 @@ model tour {
   name               String
   description        String
   price              Decimal              @db.Decimal(10, 2)
+  stars              Float
   url                String
   image_url          String
   created_at         DateTime             @default(now())
