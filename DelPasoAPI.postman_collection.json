@@ -74,7 +74,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyYjdlODA0LTczMmMtNDY1MC04OWUzLTgwMjRlNDBhNjY3NCIsImFjY291bnRfbnVtYmVyIjoyMDE4Mzg5MCwibmFtZSI6Ik1pZ3VlbCBBbmdlbCIsImRpc3BsYXlfbmFtZSI6Ik1pZ3VlbCIsImVtYWlsIjoibWlndWVsQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJjcmVhdGVkX2F0IjoiMjAyNC0xMS0wNFQxNjo0NDowNy44ODNaIiwidXBkYXRlZF9hdCI6IjIwMjQtMTEtMDRUMTY6NDQ6MDcuODgzWiIsImVtYWlsVmVyaWZpZWQiOm51bGwsImltYWdlIjpudWxsLCJpYXQiOjE3MzA3NDAwMzQsImV4cCI6MTczMDgyNjQzNH0.eglVstphj69G98ABMG9YYAK-yKR9T0Gl-rwry_K4ozk",
+									"value": "{{authToken}}",
 									"type": "string"
 								}
 							]
