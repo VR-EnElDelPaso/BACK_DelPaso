@@ -1,0 +1,369 @@
+{
+	"info": {
+		"_postman_id": "a03fc02b-fdf6-4345-aa5e-cc5c75da4a56",
+		"name": "DelPasoAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36289232"
+	},
+	"item": [
+		{
+			"name": "Preferences",
+			"item": [
+				{
+					"name": "create_preference",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{domain}}/api/preference/25b08a86-f450-41cc-9b3b-7c020db0785f",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"preference",
+								"25b08a86-f450-41cc-9b3b-7c020db0785f"
+							]
+						},
+						"description": "crea una preferencia basada en el id de un tour"
+					},
+					"response": []
+				},
+				{
+					"name": "create_preferences",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Pre-request Script para endpoints protegidos",
+									"if (!pm.request.headers.has('Authorization')) {",
+									"    const token = pm.collectionVariables.get('authToken');",
+									"    if (token) {",
+									"        pm.request.headers.add({",
+									"            key: 'Authorization',",
+									"            value: `Bearer ${token}`",
+									"        });",
+									"    } else {",
+									"        console.error('No hay token disponible');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyYjdlODA0LTczMmMtNDY1MC04OWUzLTgwMjRlNDBhNjY3NCIsImFjY291bnRfbnVtYmVyIjoyMDE4Mzg5MCwibmFtZSI6Ik1pZ3VlbCBBbmdlbCIsImRpc3BsYXlfbmFtZSI6Ik1pZ3VlbCIsImVtYWlsIjoibWlndWVsQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJjcmVhdGVkX2F0IjoiMjAyNC0xMS0wNFQxNjo0NDowNy44ODNaIiwidXBkYXRlZF9hdCI6IjIwMjQtMTEtMDRUMTY6NDQ6MDcuODgzWiIsImVtYWlsVmVyaWZpZWQiOm51bGwsImltYWdlIjpudWxsLCJpYXQiOjE3MzA3NDAwMzQsImV4cCI6MTczMDgyNjQzNH0.eglVstphj69G98ABMG9YYAK-yKR9T0Gl-rwry_K4ozk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"item_ids\": [\r\n        \"b73bd2d4-0e17-4ace-aaab-72d184c06571\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/preference/multi",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"preference",
+								"multi"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Estas rutas están protegidas, por lo que es necesario obtener un token mediante el endpoint de login para configurarlo en el _Bearer_ de estas solicitudes.",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{authToken}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"if (!pm.collectionVariables.get('authToken')) {",
+							"    // Si no hay token, ejecuta el login",
+							"    const loginRequest = {",
+							"        url: 'http://localhost:4006/api/auth/login/local',",
+							"        method: 'POST',",
+							"        header: {",
+							"            'Content-Type': 'application/json'",
+							"        },",
+							"        body: {",
+							"            mode: 'raw',",
+							"            raw: JSON.stringify({",
+							"                email: 'miguel@example.com',",
+							"                password: 'password'",
+							"            })",
+							"        }",
+							"    };",
+							"",
+							"    pm.sendRequest(loginRequest, function (err, response) {",
+							"        if (err) {",
+							"            console.error(err);",
+							"        } else {",
+							"            const token = response.json().data.token;",
+							"            pm.collectionVariables.set('authToken', token);",
+							"            console.log('Nuevo token obtenido y guardado');",
+							"        }",
+							"    });",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Tours",
+			"item": [
+				{
+					"name": "get_all_tours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/api/tour/",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"tour",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_tours_from_array",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ids\": [\r\n        \"92261470-f5e7-42c2-a85f-9356d97d3b01\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/tour/from-array",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"tour",
+								"from-array"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_tour_suggestions",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"excludedIds\": [\r\n        \"25b08a86-f450-41cc-9b3b-7c020db0785f\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/tour/suggestion?take=3",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"tour",
+								"suggestion"
+							],
+							"query": [
+								{
+									"key": "take",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_single_tour",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/api/tour/2da4c375-1eac-4fac-9188-72cae6f1ae24",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"tour",
+								"2da4c375-1eac-4fac-9188-72cae6f1ae24"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test Script para el endpoint de login",
+									"const response = pm.response.json();",
+									"",
+									"if (response.data.token) {",
+									"    pm.collectionVariables.set('authToken', response.token);",
+									"    console.log('Token guardado exitosamente');",
+									"}",
+									"",
+									"// Validaciones",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Token exists\", function () {",
+									"    pm.expect(response.data).to.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"miguel@example.com\",\r\n    \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/auth/login/local",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login",
+								"local"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"account_number\": 123456188,\r\n  \"name\": \"Juan Pérez\",\r\n  \"display_name\": \"JuanP\",\r\n  \"email\": \"juan.perez@ejsemplo.com\",\r\n  \"password\": \"Abc12345\",\r\n  \"role\": \"STUDENT\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/user/new",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"new"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "authToken",
+			"value": ""
+		}
+	]
+}
