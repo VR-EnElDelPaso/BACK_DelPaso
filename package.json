@@ -12,6 +12,9 @@
     "seed": "ts-node prisma/seed.ts",
     "prisma:deploy": "npx prisma migrate deploy && prisma generate"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VR-EnElDelPaso/BACK_DelPaso.git"
