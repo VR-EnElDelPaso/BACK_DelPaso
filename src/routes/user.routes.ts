@@ -1,4 +1,4 @@
-import e, { Router, Request, Response } from "express";
+import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 import bcrypt from "bcryptjs";
 
@@ -54,7 +54,7 @@ router.post("/new", async (req: Request, res: Response) => {
     res.status(201).json(user);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Error creating user' });
+    res.status(500).json({ success: false, error: 'An unknown error occurred during user creation' });
   }
 });
 
