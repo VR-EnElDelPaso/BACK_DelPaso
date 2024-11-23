@@ -12,6 +12,7 @@ import metadataRoutes from "./routes/metadata.routes";
 import tourRoutes from "./routes/tour.routes";
 import preferenceRoutes from "./routes/preference.routes";
 import userRoutes from "./routes/user.routes";
+import reviewsRoutes from "./routes/reviews.routes";
 import { AuthMiddleware } from "./middlewares";
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/Metadata" ,metadataRoutes);
 app.use("/api/tour", tourRoutes);
 app.use("/api/preference", preferenceRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/reviews", reviewsRoutes)
 
 app.get("/", AuthMiddleware,(req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
