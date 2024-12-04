@@ -33,6 +33,7 @@ model user {
   emailVerified      DateTime?
   image              String?
   user_tour_purchase user_tour_purchase[]
+  reviews            review[]
 }
 
 model user_tour_purchase {
@@ -56,4 +57,17 @@ model tour {
   created_at         DateTime             @default(now())
   updated_at         DateTime             @updatedAt
   user_tour_purchase user_tour_purchase[]
+  reviews            review[]
+}
+
+model review {
+  id                 String               @id @default(uuid())
+  score              Float
+  comment            String?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  user_id            String
+  user               user     @relation(fields: [user_id], references: [id])
+  tour_id            String
+  tour               tour     @relation(fields: [tour_id], references: [id])
 }
