@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "a03fc02b-fdf6-4345-aa5e-cc5c75da4a56",
+		"_postman_id": "fcbc52ca-7028-4f98-9c55-670a9e90da00",
 		"name": "DelPasoAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "36289232"
+		"_exporter_id": "26642460"
 	},
 	"item": [
 		{
@@ -352,6 +352,94 @@
 								"api",
 								"user",
 								"new"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reviews",
+			"item": [
+				{
+					"name": "create_review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMxYTQ3NmM3LWYxMTctNDYyNy05MmVhLTI0ZjViMDJiMGYxYSIsImFjY291bnRfbnVtYmVyIjoyMDE4Mzg5MCwibmFtZSI6Ik1pZ3VlbCBBbmdlbCIsImRpc3BsYXlfbmFtZSI6Ik1pZ3VlbCIsImVtYWlsIjoibWlndWVsQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJjcmVhdGVkX2F0IjoiMjAyNC0xMS0yMlQyMjoxNzoxMC4wMTdaIiwidXBkYXRlZF9hdCI6IjIwMjQtMTEtMjJUMjI6MTc6MTAuMDE3WiIsImVtYWlsVmVyaWZpZWQiOm51bGwsImltYWdlIjpudWxsLCJpYXQiOjE3MzIzMzAwODAsImV4cCI6MTczMjQxNjQ4MH0.pW4tmMHKQBeNbQktFcwf1Gf8kJCkk3oWrz53YZdjQ6U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"score\": 5,\r\n  \"comment\": \"Amazing experience!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{domain}}/api/reviews/78a6351c-17de-4482-8024-3011ecd7c9d9",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"78a6351c-17de-4482-8024-3011ecd7c9d9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "gell_all_reviews",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "update_review",
+					"request": {
+						"method": "PUT",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "delete_review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMxYTQ3NmM3LWYxMTctNDYyNy05MmVhLTI0ZjViMDJiMGYxYSIsImFjY291bnRfbnVtYmVyIjoyMDE4Mzg5MCwibmFtZSI6Ik1pZ3VlbCBBbmdlbCIsImRpc3BsYXlfbmFtZSI6Ik1pZ3VlbCIsImVtYWlsIjoibWlndWVsQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJjcmVhdGVkX2F0IjoiMjAyNC0xMS0yMlQyMjoxNzoxMC4wMTdaIiwidXBkYXRlZF9hdCI6IjIwMjQtMTEtMjJUMjI6MTc6MTAuMDE3WiIsImVtYWlsVmVyaWZpZWQiOm51bGwsImltYWdlIjpudWxsLCJpYXQiOjE3MzI0MDMzODcsImV4cCI6MTczMjQ4OTc4N30.R0PjfQlScQlWXweV-KVneDLd0j8QkUocoIG7Vc0AIoA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{domain}}/api/reviews/ea5e2b9c-89b7-479a-ab86-48ef22007c96",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"reviews",
+								"ea5e2b9c-89b7-479a-ab86-48ef22007c96"
 							]
 						}
 					},
