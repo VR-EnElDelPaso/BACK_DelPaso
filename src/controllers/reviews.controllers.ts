@@ -108,3 +108,44 @@ export const deleteReview: RequestHandler = async(req: Request, res: Response) =
         res.status(500).json({ ok: false, message: 'Failed to delete review' });
     }
 }
+
+export const getPaginatedReviews: RequestHandler = async (req: Request, res: Response) => {
+    try {
+        const { tour_id } = req.params;
+        const take = parseInt(req.query.take as string) || 10; // Número de reseñas a obtener
+        const skip = parseInt(req.query.skip as string) || 0;  // Número de reseñas a omitir
+
+        if (!tour_id) {
+            return res.status(400).json({ ok: false, message: "Tour ID is required" });
+        }
+
+        // Consultar las reseñas con paginación
+        const reviews = await prisma.review.findMany({
+            where: { tour_id },
+            take,
+            skip,
+            orderBy: { created_at: "desc" }, // Opcional: ordenar por fecha de creación
+            include: {
+                user: { select: { id: true, name: true, display_name: true, image: true } }, // Incluir datos del usuario
+            },
+        });
+
+        // Contar el total de reseñas para ese tour
+        const totalReviews = await prisma.review.count({
+            where: { tour_id },
+        });
+
+        res.status(200).json({
+            ok: true,
+            data: {
+                reviews,
+                total: totalReviews,
+                take,
+                skip,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, message: "Failed to fetch reviews" });
+    }
+};
