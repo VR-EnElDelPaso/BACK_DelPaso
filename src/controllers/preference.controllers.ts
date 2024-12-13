@@ -18,9 +18,8 @@ export const createPreferenceController: RequestHandler = async (req: Request, r
       return res.status(404).json({ ok: false, error: 'Tour not found' });
     }
 
-    const accessToken = generateAccessToken(user_id, [tour_id]);
     const preference = await createPreference(tour, mpClient);
-    return res.status(201).json({ ok: true, preferenceId: preference.id, accessToken });
+    return res.status(201).json({ ok: true, preferenceId: preference.id});
   } catch (error) {
     console.error('Error creating preference', error);
     return res.status(500).json({ ok: false, error: 'Error creating preference' });
@@ -58,8 +57,7 @@ export const createPreferencesController: RequestHandler = async (req: Request, 
       unit_price: Number(tour.price),
       quantity: 1,
     }));
-    const accessToken = generateAccessToken(user_id, itemIds);
-    console.log(accessToken);
+
     const preference = await createPreferences(preferenceItems, mpClient);
 
     const response: ResponseData = {

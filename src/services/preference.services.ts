@@ -10,6 +10,7 @@ interface PreferenceItem {
 }
 
 export const createPreference = async (tour: tour, mpClient: MercadoPagoConfig) => {
+  const notificationUrl = process.env.MP_WEBHOOK_URL;
   const preferenceData: PreferenceCreateData = {
     body: {
       items: [
@@ -24,7 +25,9 @@ export const createPreference = async (tour: tour, mpClient: MercadoPagoConfig) 
         success: 'www.google.com',
         failure: 'www.google.com',
         pending: 'www.google.com',
-      }
+      },
+      auto_return: "approved",
+      notification_url: notificationUrl,
     }
   }
 
@@ -37,6 +40,7 @@ export const createPreferences = async (
   mpClient: MercadoPagoConfig
 ) => {
 
+  const notificationUrl = process.env.MP_WEBHOOK_URL;
   const preferencesData: PreferenceCreateData = {
     body: {
       items,
@@ -44,7 +48,9 @@ export const createPreferences = async (
         success: 'www.google.com',
         failure: 'www.google.com',
         pending: 'www.google.com',
-      }
+      },
+      auto_return: "approved",
+      notification_url: notificationUrl,
     }
   };
   const emptyPreference = new Preference(mpClient);
