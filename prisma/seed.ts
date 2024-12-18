@@ -51,6 +51,27 @@ async function main() {
     }),
   ]);
 
+  const museums = await Promise.all([
+    prisma.museum.create({
+      data: {
+        name: 'Museo de Historia Natural',
+        description: 'Museo de historia natural con exposiciones de animales y fósiles',
+        address_name: 'Calle 1, Ciudad',
+        main_photo: 'https://placehold.co/400',
+        main_tour_id: ""
+      },
+    }),
+    prisma.museum.create({
+      data: {
+        name: 'Museo de Arte Moderno',
+        description: 'Museo de arte moderno con exposiciones de pinturas y esculturas',
+        address_name: 'Calle 2, Ciudad',
+        main_photo: 'https://placehold.co/400',
+        main_tour_id: ""
+      },
+    }),
+  ]);
+
   const tourUrl = "https://kuula.co/share/collection/7cp8f?logo=0&info=0&fs=1&vr=1&sd=1&initload=0&thumbs=1"
 
   // Crear 5 tours
@@ -63,6 +84,7 @@ async function main() {
         stars: 4.5,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
+        museum_id: museums[0].id
       },
     }),
     prisma.tour.create({
@@ -73,6 +95,7 @@ async function main() {
         stars: 4.8,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
+        museum_id: museums[1].id
       },
     }),
     prisma.tour.create({
@@ -83,6 +106,7 @@ async function main() {
         stars: 5.0,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
+        museum_id: museums[0].id
       },
     }),
     prisma.tour.create({
@@ -93,6 +117,7 @@ async function main() {
         stars: 4.4,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
+        museum_id: museums[1].id
       },
     }),
     prisma.tour.create({
@@ -103,6 +128,7 @@ async function main() {
         stars: 4.9,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
+        museum_id: museums[0].id
       },
     }),
   ]);
