@@ -73,4 +73,17 @@ model museum {
   updated_at   DateTime @updatedAt
 
   tours tour[]
+  open_hours open_hour[]
+}
+
+model open_hour {
+  id         String   @id @default(uuid())
+  day        String
+  open_time  DateTime
+  close_time DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  museum_id String
+  museum    museum @relation(fields: [museum_id], references: [id])
 }
