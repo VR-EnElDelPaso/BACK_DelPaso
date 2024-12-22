@@ -47,27 +47,67 @@ model user_tour_purchase {
 }
 
 model tour {
-  id                 String               @id @default(uuid())
-  name               String
-  description        String
-  price              Decimal              @db.Decimal(10, 2)
-  stars              Float
-  url                String
-  image_url          String
-  created_at         DateTime             @default(now())
-  updated_at         DateTime             @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  stars       Float
+  url         String
+  image_url   String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  museum_id String @default("")
+  museum    museum @relation(fields: [museum_id], references: [id])
+
   user_tour_purchase user_tour_purchase[]
   reviews            review[]
 }
 
+model museum {
+  id           String   @id @default(uuid())
+  name         String
+  description  String
+  address_name String
+  main_photo   String
+  main_tour_id String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  tours      tour[]
+  open_hours open_hour[]
+}
+
 model review {
-  id                 String               @id @default(uuid())
-  score              Float
-  comment            String?
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-  user_id            String
-  user               user     @relation(fields: [user_id], references: [id])
-  tour_id            String
-  tour               tour     @relation(fields: [tour_id], references: [id])
+  id         String   @id @default(uuid())
+  score      Float
+  comment    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user_id    String
+  user       user     @relation(fields: [user_id], references: [id])
+  tour_id    String
+  tour       tour     @relation(fields: [tour_id], references: [id])
+}
+
+model open_hour {
+  id         String   @id @default(uuid())
+  day        Day
+  open_time  String
+  close_time String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  museum_id String
+  museum    museum @relation(fields: [museum_id], references: [id])
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
