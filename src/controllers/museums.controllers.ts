@@ -2,7 +2,7 @@ import { z } from "zod";
 import prisma from "../prisma";
 import { ResponseData } from "../types/ResponseData";
 import { Request, Response } from "express";
-import { EditMuseumSchema } from "../types/museums/ZodSchemas";
+import { CreateMuseumSchema, EditMuseumSchema } from "../types/museums/ZodSchemas";
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllerUtils";
 
 export const getAllMuseumsController = async (req: Request, res: Response) => {
@@ -35,6 +35,19 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
   return res.status(200).json({
     ok: true,
     message: "Museum fetched successfully",
+    data: museum,
+  } as ResponseData);
+}
+
+export const createMuseumController = async (req: Request, res: Response) => {
+  const bodyValidation = CreateMuseumSchema.safeParse(req.body);
+  if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
+
+  const museum = await prisma.museum.create({ data: bodyValidation.data });
+  
+  return res.status(201).json({
+    ok: true,
+    message: "Museum created successfully",
     data: museum,
   } as ResponseData);
 }
