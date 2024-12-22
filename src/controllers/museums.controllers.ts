@@ -91,3 +91,21 @@ export const editMuseumController = async (req: Request, res: Response) => {
     data: updatedMuseum,
   } as ResponseData);
 };
+
+export const deleteMuseumController = async (req: Request, res: Response) => {
+  validateIdAndRespond(res, req.params.id);
+  const id = req.params.id;
+
+  // Check if museum exists
+  const foundMuseum = await prisma.museum.findUnique({ where: { id } });
+  if (!foundMuseum) return notFoundResponse(res, "Museum");
+
+  // Delete museum
+  const deletedMuseum = await prisma.museum.delete({ where: { id } });
+
+  return res.status(200).json({
+    ok: true,
+    message: "Museum deleted successfully",
+    data: deletedMuseum,
+  } as ResponseData);
+};
