@@ -12,18 +12,15 @@ app.listen(config.app.port, async () => {
   try {
     await prisma.$connect();
     
-    const userTourRelation = await prisma.user.findFirst({
-      select: {
-        user_tour_purchase: {
-          select: {
-            tour: true,
-          },
-        },
+    const museums = await prisma.museum.findMany({
+      where: {
+        main_tour_id: {
+          not: null
+        }
       }
     });
     
-    const userPurchasedTours = userTourRelation?.user_tour_purchase.map((purchasedTour) => purchasedTour.tour)
-    console.log(userPurchasedTours);
+    console.log(museums);
     
     console.log('\n---[Connected to database]---');
     console.log(`\n\n---[Listening on port ${config.app.port}]---\n`);
