@@ -1,37 +1,25 @@
 import { Request, Response, Router } from "express";
 import prisma from "../prisma";
-import { getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
+import { createTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
 
 const router = Router();
 
+// get all
+router.get("/", getAllToursController);
+
+// get one
+router.get("/:id", getTourByIdController);
+
+// get from array of ids
 router.post("/from-array", getToursFromIds);
 
-router.get("/", async (req: Request, res: Response) => {
-  try {
-    const tours = await prisma.tour.findMany();
-    res.json(tours);
-  } catch (error) {
-    res.status(500).json({ error: 'Error fetching tours' });
-  }
-});
-
-router.get("/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const tour = await prisma.tour.findUnique({
-      where: { id },
-    });
-    if (tour) {
-      res.json(tour);
-    } else {
-      res.status(404).json({ error: 'Tour not found' });
-    }
-  } catch (error) {
-    res.status(500);
-  }
-});
-
+// get suggestions
 router.post("/suggestion", getTourSuggestions);
+
+// create one
+router.post("/", createTourController);
+
+
 
 
 export default router;
