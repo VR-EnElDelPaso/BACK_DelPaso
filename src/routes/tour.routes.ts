@@ -1,6 +1,5 @@
-import { Request, Response, Router } from "express";
-import prisma from "../prisma";
-import { createTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
+import { Router } from "express";
+import { createTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
 
 const router = Router();
 
@@ -18,6 +17,9 @@ router.post("/suggestion", getTourSuggestions);
 
 // create one
 router.post("/", createTourController);
+
+// edit one
+router.patch("/:id", editTourController);
 
 
 

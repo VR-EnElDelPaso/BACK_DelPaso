@@ -2,8 +2,8 @@ import { RequestHandler, Request, Response } from "express";
 import { ResponseData } from '../types/ResponseData';
 import prisma from '../prisma';
 import { z } from "zod";
-import { CreateTourSchema } from "../types/tours/ZodSchemas";
-import { invalidBodyResponse } from "../utils/controllerUtils";
+import { CreateTourSchema, EditTourSchema } from "../types/tours/ZodSchemas";
+import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllerUtils";
 
 const IdsSchema = z.array(z.string());
 
@@ -135,6 +135,55 @@ export const createTourController = async (req: Request, res: Response) => {
     return res.status(500).json({
       ok: false,
       message: 'Error creating tour',
+      errors: (error as any).message,
+    } as ResponseData);
+  }
+}
+
+export const editTourController = async (req: Request, res: Response) => {
+  try {
+    validateIdAndRespond(res, req.params.id);
+    const id = req.params.id;
+
+    // Check if tour exists
+    const foundTour = await prisma.tour.findUnique({ where: { id } });
+    if (!foundTour) return notFoundResponse(res, "Tour");
+
+    // Validate body
+    const bodyValidation = EditTourSchema.safeParse(req.body);
+    if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
+
+    // validate at least one field is present
+    if (validateEmptyBody(bodyValidation.data)) return emptyBodyResponse(res);
+
+    // filter only valid fields from the body
+    const validFields = Object.keys(bodyValidation.data).reduce(
+      (acc: Partial<Record<keyof typeof bodyValidation.data, string | number>>, key) => {
+        const typedKey = key as keyof typeof bodyValidation.data;
+        if (bodyValidation.data[typedKey] !== undefined) {
+          acc[typedKey] = bodyValidation.data[typedKey] as any;
+        }
+        return acc;
+      },
+      {} as Partial<typeof bodyValidation.data>
+    ) as any;
+
+    // Update the tour
+    const updatedTour = await prisma.tour.update({
+      where: { id },
+      data: validFields,
+    });
+
+    // Respond with the updated tour
+    return res.status(200).json({
+      ok: true,
+      message: "Tour updated successfully",
+      data: updatedTour,
+    } as ResponseData);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: 'Error updating tour',
       errors: (error as any).message,
     } as ResponseData);
   }
