@@ -3,12 +3,12 @@ import { z } from "zod";
 import { ResponseData } from "../types/ResponseData";
 
 export const validateIdAndRespond = (res: Response, id: string) => {
-  const idValidation = z.string().safeParse(id);
+  const idValidation = z.string().uuid().safeParse(id);
   if (!idValidation.success)
     return res.status(400).json({
       ok: false,
       message: "Invalid id",
-      errors: idValidation.error.format(),
+      errors: idValidation.error.format()["_errors"],
     } as unknown as ResponseData);
   return idValidation.data;
 }
