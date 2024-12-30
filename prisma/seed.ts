@@ -25,12 +25,11 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        account_number: 20194567,
-        name: 'Ana García',
-        display_name: 'Ana',
-        email: 'ana@example.com',
-        role: 'STUDENT',
-        password: bcrypt.hashSync('password'),
+        name: 'Admin',
+        display_name: 'Admin',
+        email: 'admin@admin.com',
+        role: 'ADMIN',
+        password: bcrypt.hashSync('tamaldepollo'),
       },
     }),
     prisma.user.create({
