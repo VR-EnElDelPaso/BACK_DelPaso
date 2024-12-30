@@ -188,3 +188,30 @@ export const editTourController = async (req: Request, res: Response) => {
     } as ResponseData);
   }
 }
+
+export const deleteTourController = async (req: Request, res: Response) => {
+  try {
+    validateIdAndRespond(res, req.params.id);
+    const id = req.params.id;
+
+    // Check if tour exists
+    const foundTour = await prisma.tour.findUnique({ where: { id } });
+    if (!foundTour) return notFoundResponse(res, "Tour");
+
+    // Delete the tour
+    await prisma.tour.delete({ where: { id } });
+
+    // Respond with success message
+    return res.status(200).json({
+      ok: true,
+      message: "Tour deleted successfully",
+      data: foundTour,
+    } as ResponseData);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: 'Error deleting tour',
+      errors: (error as any).message,
+    } as ResponseData);
+  }
+}

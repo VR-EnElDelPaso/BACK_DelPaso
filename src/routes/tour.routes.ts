@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
+import { createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
 
 const router = Router();
 
@@ -20,6 +20,9 @@ router.post("/", createTourController);
 
 // edit one
 router.patch("/:id", editTourController);
+
+// delete one
+router.delete("/:id", deleteTourController);
 
 
 
