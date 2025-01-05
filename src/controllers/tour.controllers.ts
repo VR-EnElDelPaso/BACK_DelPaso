@@ -198,13 +198,24 @@ export const deleteTourController = async (req: Request, res: Response) => {
     const foundTour = await prisma.tour.findUnique({ where: { id } });
     if (!foundTour) return notFoundResponse(res, "Tour");
 
-    // Delete the tour
+    // Delete everything in order:
+    // 1. Delete reviews
+    await prisma.review.deleteMany({
+      where: { tour_id: id }
+    });
+
+    // 2. Delete purchase records
+    await prisma.user_tour_purchase.deleteMany({
+      where: { tour_id: id }
+    });
+
+    // 3. Finally delete the tour
     await prisma.tour.delete({ where: { id } });
 
     // Respond with success message
     return res.status(200).json({
       ok: true,
-      message: "Tour deleted successfully",
+      message: "Tour and associated data deleted successfully",
       data: foundTour,
     } as ResponseData);
   } catch (error) {
