@@ -58,7 +58,7 @@ model tour {
   updated_at  DateTime @updatedAt
 
   museum_id String @default("")
-  museum    museum @relation(fields: [museum_id], references: [id])
+  museum    museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
 
   user_tour_purchase user_tour_purchase[]
   reviews            review[]
@@ -85,9 +85,9 @@ model review {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   user_id    String
-  user       user     @relation(fields: [user_id], references: [id])
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   tour_id    String
-  tour       tour     @relation(fields: [tour_id], references: [id])
+  tour       tour     @relation(fields: [tour_id], references: [id], onDelete: Cascade)
 }
 
 model open_hour {
@@ -99,7 +99,7 @@ model open_hour {
   updated_at DateTime @updatedAt
 
   museum_id String
-  museum    museum @relation(fields: [museum_id], references: [id])
+  museum    museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
 }
 
 enum Day {
