@@ -79,7 +79,9 @@ export const editMuseumController = async (req: Request, res: Response) => {
     (acc, key) => {
       const typedKey = key as keyof typeof bodyValidation.data;
       if (bodyValidation.data[typedKey] !== undefined) {
-        acc[typedKey] = bodyValidation.data[typedKey];
+        if (bodyValidation.data[typedKey] !== null) {
+          acc[typedKey] = bodyValidation.data[typedKey] as string | undefined;
+        }
       }
       return acc;
     },
