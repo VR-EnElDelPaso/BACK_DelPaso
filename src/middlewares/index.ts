@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import passportInstance from "../passport";
-import { user } from "@prisma/client";
+import { User } from "@prisma/client";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
 import jwt from "jsonwebtoken";
 

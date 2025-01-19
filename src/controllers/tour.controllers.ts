@@ -204,11 +204,6 @@ export const deleteTourController = async (req: Request, res: Response) => {
       where: { tour_id: id }
     });
 
-    // 2. Delete purchase records
-    await prisma.user_tour_purchase.deleteMany({
-      where: { tour_id: id }
-    });
-
     // 3. Finally delete the tour
     await prisma.tour.delete({ where: { id } });
 

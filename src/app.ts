@@ -3,7 +3,6 @@ import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import cors from "cors";
 import morgan from "morgan";
-
 // local
 import passportInstance from "./passport";
 import config from "./config";
@@ -15,6 +14,8 @@ import userRoutes from "./routes/user.routes";
 import reviewsRoutes from "./routes/reviews.routes";
 import museumsRoutes from "./routes/museums.routes";
 import storageRoutes from "./routes/storage.routes";
+// import mpWebHookRoutes from "./routes/mp_web_hook.routes";
+import orderRoutes from "./routes/order.routes";
 // middlewares
 import { AuthMiddleware } from "./middlewares";
 
@@ -55,10 +56,12 @@ app.use("/api/auth", authRoutes);
 app.use("/Metadata", metadataRoutes);
 app.use("/api/tour", tourRoutes);
 app.use("/api/preference", preferenceRoutes);
+// app.use("/api/mp-web-hook", mpWebHookRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/reviews", reviewsRoutes)
 app.use("/api/museums", museumsRoutes);
 app.use("/api/storage", storageRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", AuthMiddleware, (req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));

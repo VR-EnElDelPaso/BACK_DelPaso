@@ -32,3 +32,10 @@ export const emptyBodyResponse = (res: Response) => res.status(400).json({
   ok: false,
   message: "At least one field is required",
 } as ResponseData);
+
+export const operationErrorResponse = (res: Response) => {
+  return res.status(500).json({
+    ok: false,
+    message: "Operation error",
+  } as ResponseData);
+}
