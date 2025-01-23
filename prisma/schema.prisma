@@ -20,88 +20,6 @@ enum Role {
   ADMIN
 }
 
-model user {
-  id                 String               @id @default(uuid())
-  account_number     Int?                 @unique
-  name               String
-  display_name       String
-  email              String               @unique
-  password           String?
-  role               Role                 @default(VISITOR)
-  created_at         DateTime             @default(now())
-  updated_at         DateTime             @updatedAt
-  emailVerified      DateTime?
-  image              String?
-  user_tour_purchase user_tour_purchase[]
-  reviews            review[]
-}
-
-model user_tour_purchase {
-  id         String   @id @default(uuid())
-  user       user     @relation(fields: [user_id], references: [id])
-  user_id    String
-  tour       tour     @relation(fields: [tour_id], references: [id])
-  tour_id    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-model tour {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  price       Decimal  @db.Decimal(10, 2)
-  stars       Float    @default(0)
-  url         String
-  image_url   String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  museum_id String @default("")
-  museum    museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
-
-  user_tour_purchase user_tour_purchase[]
-  reviews            review[]
-}
-
-model museum {
-  id           String   @id @default(uuid())
-  name         String
-  description  String
-  address_name String
-  main_photo   String
-  main_tour_id String?
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-
-  tours      tour[]
-  open_hours open_hour[]
-}
-
-model review {
-  id         String   @id @default(uuid())
-  score      Float
-  comment    String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  user_id    String
-  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  tour_id    String
-  tour       tour     @relation(fields: [tour_id], references: [id], onDelete: Cascade)
-}
-
-model open_hour {
-  id         String   @id @default(uuid())
-  day        Day
-  open_time  String
-  close_time String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  museum_id String
-  museum    museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
-}
-
 enum Day {
   MONDAY
   TUESDAY
@@ -110,4 +28,174 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum PaymentStatus {
+  pending // Usuario no ha completado el proceso de pago
+  approved // Pago aprobado y acreditado
+  authorized // Pago autorizado pero no capturado
+  in_process // Pago en proceso de revisión
+  in_mediation // Usuario inició una disputa
+  rejected // Pago rechazado
+  cancelled // Pago cancelado o caducado
+  refunded // Pago reembolsado al usuario
+  charged_back // Contracargo realizado en la tarjeta
+
+  @@map("payment_status")
+}
+
+enum OrderStatus {
+  CART // Orden en carrito
+  PENDING // Orden creada pero sin pago iniciado
+  PROCESSING // Pago en proceso
+  COMPLETED // Pago completado y accesos generados
+  FAILED // Pago fallido
+  CANCELLED // Orden cancelada
+  REFUNDED // Pago reembolsado
+}
+
+model User {
+  id             String @id @default(uuid())
+  account_number Int?   @unique
+  email          String @unique
+
+  name           String
+  display_name   String
+  image          String?
+  password       String?
+  email_verified DateTime?
+  role           Role      @default(VISITOR)
+
+  reviews Review[]
+  orders  Order[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Order {
+  id String @id @default(uuid())
+
+  total  Decimal     @db.Decimal(10, 2)
+  status OrderStatus
+  tours  Tour[]
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id])
+
+  preference Preference?
+  payment    Payment?
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  cancelled_at DateTime?
+  completed_at DateTime?
+
+  @@index([user_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+model Preference {
+  id              String @id @default(uuid())
+  mercado_pago_id String @unique
+
+  order_id String @unique
+  order    Order  @relation(fields: [order_id], references: [id])
+  items Json
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  expires_at DateTime?
+
+  @@index([order_id])
+  @@index([mercado_pago_id])
+}
+
+model Payment {
+  id             String @id @default(uuid())
+  mercad_pago_id String @unique
+
+  transaction_details Json
+  status              PaymentStatus
+
+  order_id String @unique
+  order    Order  @relation(fields: [order_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([order_id])
+  @@index([mercad_pago_id])
+}
+
+model Tour {
+  id String @id @default(uuid())
+
+  name        String
+  description String
+  price       Decimal @db.Decimal(10, 2)
+  stars       Float   @default(0)
+  url         String
+  image_url   String
+
+  museum_id String   @default("")
+  museum    Museum   @relation(fields: [museum_id], references: [id], onDelete: Cascade)
+  reviews   Review[]
+  orders    Order[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([museum_id])
+}
+
+model Museum {
+  id String @id @default(uuid())
+
+  name         String
+  description  String
+  address_name String
+  main_photo   String
+
+  main_tour_id String?
+  tours        Tour[]
+  open_hours   OpenHour[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([main_tour_id])
+}
+
+model Review {
+  id      String  @id @default(uuid())
+  score   Float
+  comment String?
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  tour_id String
+  tour    Tour   @relation(fields: [tour_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([tour_id])
+}
+
+model OpenHour {
+  id         String   @id @default(uuid())
+  day        Day
+  open_time  String
+  close_time String
+
+  museum_id String
+  museum    Museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([museum_id])
 }

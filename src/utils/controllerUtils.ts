@@ -5,7 +5,7 @@ import { ResponseData } from "../types/ResponseData";
 export const validateIdAndRespond = (res: Response, id: string) => {
   const idValidation = z.string().uuid().safeParse(id);
   if (!idValidation.success)
-    return res.status(400).json({
+    res.status(400).json({
       ok: false,
       message: "Invalid id",
       errors: idValidation.error.format()["_errors"],
@@ -32,3 +32,10 @@ export const emptyBodyResponse = (res: Response) => res.status(400).json({
   ok: false,
   message: "At least one field is required",
 } as ResponseData);
+
+export const operationErrorResponse = (res: Response) => {
+  return res.status(500).json({
+    ok: false,
+    message: "Operation error",
+  } as ResponseData);
+}

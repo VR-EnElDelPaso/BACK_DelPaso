@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run prisma:deploy && node dist/src/index.js",
     "build": "tsc",
+
     "dev": "nodemon --exec ts-node src/index.ts",
+    "dev:ngrok": " ngrok http 4006",
+
     "migrate": "npx prisma migrate dev",
     "seed": "ts-node prisma/seed.ts",
     "prisma:deploy": "npx prisma migrate deploy && prisma generate"

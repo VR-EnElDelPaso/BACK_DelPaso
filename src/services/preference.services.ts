@@ -1,4 +1,4 @@
-import { tour } from "@prisma/client";
+import { Tour } from "@prisma/client";
 import MercadoPagoConfig, { Preference } from "mercadopago";
 import { type PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
 
@@ -9,7 +9,7 @@ interface PreferenceItem {
   quantity: number;
 }
 
-export const createPreference = async (tour: tour, mpClient: MercadoPagoConfig) => {
+export const createPreference = async (tour: Tour, mpClient: MercadoPagoConfig) => {
   const preferenceData: PreferenceCreateData = {
     body: {
       items: [
@@ -34,12 +34,13 @@ export const createPreference = async (tour: tour, mpClient: MercadoPagoConfig) 
 
 export const createPreferences = async (
   items: PreferenceCreateData["body"]["items"],
+  orderId: string,
   mpClient: MercadoPagoConfig
 ) => {
-
   const preferencesData: PreferenceCreateData = {
     body: {
       items,
+      external_reference: orderId,
       back_urls: {
         success: 'www.google.com',
         failure: 'www.google.com',
