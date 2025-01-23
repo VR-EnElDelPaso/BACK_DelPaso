@@ -1,15 +1,19 @@
-import { Day, PrismaClient, Role } from '@prisma/client';
+import { Day, OrderStatus, PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Limpia la base de datos
-  await prisma.user_tour_purchase.deleteMany();
   await prisma.tour.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.open_hour.deleteMany();
+  await prisma.openHour.deleteMany();
   await prisma.museum.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.preference.deleteMany();
+  await prisma.order.deleteMany();
+
 
   // Crear 4 usuarios (2 estudiantes y 2 visitantes)
   const users = await Promise.all([
@@ -74,7 +78,7 @@ async function main() {
 
 
   Object.values(Day).map(async (day) => {
-    await prisma.open_hour.create({
+    await prisma.openHour.create({
       data: {
         day,
         open_time: "09:00",
@@ -82,7 +86,7 @@ async function main() {
         museum_id: museums[0].id,
       },
     });
-    await prisma.open_hour.create({
+    await prisma.openHour.create({
       data: {
         day,
         open_time: "10:00",
@@ -153,30 +157,44 @@ async function main() {
     }),
   ]);
 
-  // Crear algunas compras de tours
-  await Promise.all([
-    prisma.user_tour_purchase.create({
+  const orders = await Promise.all([
+    prisma.order.create({
       data: {
         user_id: users[0].id,
-        tour_id: tours[0].id,
+        tours: {
+          connect: [
+            { id: tours[0].id },
+            { id: tours[1].id },
+          ],
+        },
+        status: OrderStatus.PENDING,
+        total: tours[0].price,
       },
     }),
-    prisma.user_tour_purchase.create({
+    prisma.order.create({
       data: {
         user_id: users[0].id,
-        tour_id: tours[2].id,
+        tours: {
+          connect: [
+            { id: tours[0].id },
+            { id: tours[3].id },
+          ],
+        },
+        status: OrderStatus.PENDING,
+        total: tours[0].price,
       },
     }),
-    prisma.user_tour_purchase.create({
+    prisma.order.create({
       data: {
         user_id: users[1].id,
-        tour_id: tours[1].id,
-      },
-    }),
-    prisma.user_tour_purchase.create({
-      data: {
-        user_id: users[2].id,
-        tour_id: tours[3].id,
+        tours: {
+          connect: [
+            { id: tours[2].id },
+            { id: tours[3].id },
+          ],
+        },
+        status: OrderStatus.PENDING,
+        total: tours[1].price,
       },
     }),
   ]);
