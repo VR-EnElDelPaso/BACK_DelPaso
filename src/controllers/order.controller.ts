@@ -13,6 +13,7 @@ const createOneOrderBodySchema = z.object({
 });
 
 const PatchOrderSchema = z.object({
+
   status: z.enum([...Object.values(OrderStatus)] as [OrderStatus])
 });
 
@@ -49,7 +50,7 @@ export const getOneOrderController: RequestHandler = async (req: Request, res: R
 // create one
 export const createOneOrderController: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const userId: UserWithoutPassword = req.user!;
+    const userId = (req.user as UserWithoutPassword)?.id;
 
     // Validate body
     const bodyValidation = createOneOrderBodySchema.safeParse(req.body);
@@ -68,22 +69,15 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
     const total = tours.reduce((acc, tour) => acc + tour.price.toNumber(), 0);
     const createdOrder = await prisma.order.create({
       data: {
-        user_id: userId.id,
+        user_id: userId,
         total,
         status: "PENDING",
         tours: {
           connect: tours.map(tour => ({ id: tour.id }))
         }
       },
-      select: {
-        id: true,
-        total: true,
-        status: true,
-        tours: {
-          select: {
-            id: true,
-          }
-        }
+      include: {
+        tours: true,
       }
     });
 
@@ -101,8 +95,8 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
 // edit/patch one
 export const patchOrderController: RequestHandler = async (req: Request, res: Response) => {
   try {
-    validateIdAndRespond(res, req.params.id);
-    const orderId = req.params.id;
+    
+    const orderId = validateIdAndRespond(res, req.params.order_id);
 
     // order validation
     const foundOrder = await prisma.order.findUnique({ where: { id: orderId } });
@@ -117,6 +111,9 @@ export const patchOrderController: RequestHandler = async (req: Request, res: Re
       where: { id: orderId },
       data: {
         status: bodyValidation.data.status
+      },
+      include: {
+        tours: true
       }
     });
 

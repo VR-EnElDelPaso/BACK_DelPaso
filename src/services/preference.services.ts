@@ -34,13 +34,13 @@ export const createPreference = async (tour: Tour, mpClient: MercadoPagoConfig) 
 
 export const createPreferences = async (
   items: PreferenceCreateData["body"]["items"],
-  userId: string,
+  orderId: string,
   mpClient: MercadoPagoConfig
 ) => {
   const preferencesData: PreferenceCreateData = {
     body: {
       items,
-      external_reference: userId,
+      external_reference: orderId,
       back_urls: {
         success: 'www.google.com',
         failure: 'www.google.com',
