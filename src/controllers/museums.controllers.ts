@@ -5,6 +5,10 @@ import { Request, Response } from "express";
 import { CreateMuseumSchema, EditMuseumSchema } from "../types/museums/ZodSchemas";
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllerUtils";
 
+
+// ----[ CRUD ]----
+
+// Get all museums
 export const getAllMuseumsController = async (req: Request, res: Response) => {
   const museums = await prisma.museum.findMany({ orderBy: { created_at: "desc" } });
   return res.status(200).json({
@@ -14,6 +18,7 @@ export const getAllMuseumsController = async (req: Request, res: Response) => {
   } as ResponseData);
 }
 
+// Get museum by id
 export const getMuseumByIdController = async (req: Request, res: Response) => {
   const idValidation = z.string().safeParse(req.params.id);
   if (!idValidation.success)
@@ -39,6 +44,7 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
   } as ResponseData);
 }
 
+// Create museum
 export const createMuseumController = async (req: Request, res: Response) => {
   const bodyValidation = CreateMuseumSchema.safeParse(req.body);
   if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
@@ -52,6 +58,7 @@ export const createMuseumController = async (req: Request, res: Response) => {
   } as ResponseData);
 }
 
+// Edit museum
 export const editMuseumController = async (req: Request, res: Response) => {
   validateIdAndRespond(res, req.params.id);
   const id = req.params.id;
@@ -72,7 +79,9 @@ export const editMuseumController = async (req: Request, res: Response) => {
     (acc, key) => {
       const typedKey = key as keyof typeof bodyValidation.data;
       if (bodyValidation.data[typedKey] !== undefined) {
-        acc[typedKey] = bodyValidation.data[typedKey];
+        if (bodyValidation.data[typedKey] !== null) {
+          acc[typedKey] = bodyValidation.data[typedKey] as string | undefined;
+        }
       }
       return acc;
     },
@@ -92,6 +101,7 @@ export const editMuseumController = async (req: Request, res: Response) => {
   } as ResponseData);
 };
 
+// Delete museum
 export const deleteMuseumController = async (req: Request, res: Response) => {
   validateIdAndRespond(res, req.params.id);
   const id = req.params.id;
@@ -107,5 +117,26 @@ export const deleteMuseumController = async (req: Request, res: Response) => {
     ok: true,
     message: "Museum deleted successfully",
     data: deletedMuseum,
+  } as ResponseData);
+};
+
+// ----[ Sub resources ]----
+
+// Tours
+export const getMuseumToursController = async (req: Request, res: Response) => {
+  validateIdAndRespond(res, req.params.museum_id);
+  const museumId = req.params.museum_id;
+
+  // Check if museum exists
+  const foundMuseum = await prisma.museum.findUnique({ where: { id: museumId } });
+  if (!foundMuseum) return notFoundResponse(res, "Museum");
+
+  // Get museum tours
+  const tours = await prisma.tour.findMany({ where: { museum_id: museumId } });
+
+  return res.status(200).json({
+    ok: true,
+    message: "Museum tours fetched successfully",
+    data: tours,
   } as ResponseData);
 };
