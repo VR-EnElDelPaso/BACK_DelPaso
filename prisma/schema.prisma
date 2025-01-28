@@ -63,8 +63,11 @@ model User {
   display_name   String
   image          String?
   password       String?
-  email_verified DateTime?
   role           Role      @default(VISITOR)
+
+  is_verified    Boolean? // Email verificado
+  verificationToken           String?       // Token de verificacion
+  verificationTokenExpiresAt  DateTime?     // Caducidad de token de verificacion
 
   reviews Review[]
   orders  Order[]
