@@ -7,10 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run prisma:deploy && node dist/src/index.js",
     "build": "tsc",
-
     "dev": "nodemon --exec ts-node src/index.ts",
     "dev:ngrok": " ngrok http 4006",
-
     "migrate": "npx prisma migrate dev",
     "seed": "ts-node prisma/seed.ts",
     "prisma:deploy": "npx prisma migrate deploy && prisma generate"
@@ -38,6 +36,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "jsonwebtoken": "^9.0.2",
+    "mailtrap": "^3.4.0",
     "mercadopago": "^2.0.11",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
