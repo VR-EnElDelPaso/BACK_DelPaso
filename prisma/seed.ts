@@ -1,19 +1,18 @@
-import { Day, OrderStatus, PrismaClient, Role } from '@prisma/client';
+import { Day, OrderStatus, PrismaClient, Role, TourTag } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Limpia la base de datos
+  await prisma.order.deleteMany();
   await prisma.tour.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.openHour.deleteMany();
-  await prisma.museum.deleteMany();
   await prisma.review.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.preference.deleteMany();
-  await prisma.order.deleteMany();
-
+  await prisma.openHour.deleteMany();
+  await prisma.museum.deleteMany();
+  await prisma.user.deleteMany();
 
   // Crear 4 usuarios (2 estudiantes y 2 visitantes)
   const users = await Promise.all([
@@ -76,7 +75,6 @@ async function main() {
     }),
   ]);
 
-
   Object.values(Day).map(async (day) => {
     await prisma.openHour.create({
       data: {
@@ -96,9 +94,9 @@ async function main() {
     });
   });
 
-  const tourUrl = "https://kuula.co/share/collection/7cp8f?logo=0&info=0&fs=1&vr=1&sd=1&initload=0&thumbs=1"
+  const tourUrl = "https://kuula.co/share/collection/7cp8f?logo=0&info=0&fs=1&vr=1&sd=1&initload=0&thumbs=1";
 
-  // Crear 5 tours
+  // Crear 5 tours con tags asignados
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
@@ -108,7 +106,8 @@ async function main() {
         stars: 4.5,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
-        museum_id: museums[0].id
+        museum_id: museums[0].id,
+        tags: [TourTag.Local, TourTag.University] // Tour local
       },
     }),
     prisma.tour.create({
@@ -119,7 +118,8 @@ async function main() {
         stars: 4.8,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
-        museum_id: museums[1].id
+        museum_id: museums[1].id,
+        tags: [TourTag.Local] // Tour local
       },
     }),
     prisma.tour.create({
@@ -130,7 +130,8 @@ async function main() {
         stars: 5.0,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
-        museum_id: museums[0].id
+        museum_id: museums[0].id,
+        tags: [TourTag.States] // Tour a otro estado
       },
     }),
     prisma.tour.create({
@@ -141,7 +142,8 @@ async function main() {
         stars: 4.4,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
-        museum_id: museums[1].id
+        museum_id: museums[1].id,
+        tags: [TourTag.University] // Tour universitario
       },
     }),
     prisma.tour.create({
@@ -152,7 +154,8 @@ async function main() {
         stars: 4.9,
         url: tourUrl,
         image_url: 'https://placehold.co/400',
-        museum_id: museums[0].id
+        museum_id: museums[0].id,
+        tags: [TourTag.Country] // Tour a otro país
       },
     }),
   ]);
@@ -206,6 +209,6 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    console.log('seeding executed');
+    console.log('Seeding executed');
     await prisma.$disconnect();
   });
