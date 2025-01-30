@@ -77,7 +77,9 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
         }
       },
       include: {
-        tours: true,
+        tours: {
+          select: { id: true }
+        },
       }
     });
 
@@ -95,7 +97,7 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
 // edit/patch one
 export const patchOrderController: RequestHandler = async (req: Request, res: Response) => {
   try {
-    
+
     const orderId = validateIdAndRespond(res, req.params.order_id);
 
     // order validation
