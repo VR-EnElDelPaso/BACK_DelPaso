@@ -129,7 +129,9 @@ export const patchOrderController: RequestHandler = async (req: Request, res: Re
 // get orders by user
 export const getOrdersByUserController: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const userId = (req.user as UserWithoutPassword)?.id;
+    const userId = req.params.user_id;
+    const foundUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!foundUser) return notFoundResponse(res, "User");
 
     const orders = await prisma.order.findMany({
       where: { user_id: userId },
