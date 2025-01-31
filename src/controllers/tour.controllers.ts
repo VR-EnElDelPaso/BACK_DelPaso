@@ -72,19 +72,60 @@ export const getTourSuggestions: RequestHandler = async (req: Request, res: Resp
 
 export const getAllToursController = async (req: Request, res: Response) => {
   try {
-    const tours = await prisma.tour.findMany();
+    const { tag } = req.query;
+
+    let tours;
+    if (tag) {
+      tours = await prisma.tour.findMany({
+        where: {
+          tags: {
+            some: {
+              tag: {
+                name: tag as string, // Filtra tours que tengan el tag solicitado
+              },
+            },
+          },
+        },
+        include: {
+          tags: {
+            include: {
+              tag: true, // Devuelve el objeto completo del `Tag`
+            },
+          },
+        },
+      });
+    } else {
+      tours = await prisma.tour.findMany({
+        include: {
+          tags: {
+            include: {
+              tag: true, // Devuelve el objeto completo del `Tag`
+            },
+          },
+        },
+      });
+    }
+
+    // Formatear la respuesta para estructurar mejor los datos
+    const formattedTours = tours.map(tour => ({
+      ...tour,
+      tags: tour.tags.map(t => t.tag), // Extrae los objetos completos de `Tag`
+    }));
+
     return res.status(200).json({
       ok: true,
-      message: "Museums fetched successfully",
-      data: tours,
-    } as ResponseData);
+      message: "Tours fetched successfully",
+      data: formattedTours,
+    });
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      message: 'Error fetching tours',
-    } as ResponseData);
+      message: "Error fetching tours",
+      errors: (error as any).message,
+    });
   }
-}
+};
+
 
 export const getTourByIdController = async (req: Request, res: Response) => {
   try {
@@ -124,7 +165,29 @@ export const createTourController = async (req: Request, res: Response) => {
     const bodyValidation = CreateTourSchema.safeParse(req.body);
     if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
 
-    const tour = await prisma.tour.create({ data: bodyValidation.data });
+    const { tags, ...tourData } = bodyValidation.data;
+
+    const foundTags = await prisma.tag.findMany({
+      where: { name: { in: tags } }
+    });
+
+    if (foundTags.length !== tags.length) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Uno o más tags no existen en la base de datos',
+      } as ResponseData);
+    }
+
+    const tour = await prisma.tour.create({
+      data: {
+        ...tourData,
+        tags: {
+          create: foundTags.map(tag => ({
+            tag: { connect: { id: tag.id } }
+          }))
+        }
+      }
+    });
 
     return res.status(201).json({
       ok: true,
@@ -157,16 +220,16 @@ export const editTourController = async (req: Request, res: Response) => {
     if (validateEmptyBody(bodyValidation.data)) return emptyBodyResponse(res);
 
     // filter only valid fields from the body
-    const validFields = Object.keys(bodyValidation.data).reduce(
-      (acc: Partial<Record<keyof typeof bodyValidation.data, string | number>>, key) => {
-        const typedKey = key as keyof typeof bodyValidation.data;
-        if (bodyValidation.data[typedKey] !== undefined) {
-          acc[typedKey] = bodyValidation.data[typedKey] as any;
+    const validFields = Object.entries(bodyValidation.data).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
         }
         return acc;
       },
-      {} as Partial<typeof bodyValidation.data>
-    ) as any;
+      {} as Record<string, unknown>
+    );
+    
 
     // Update the tour
     const updatedTour = await prisma.tour.update({
