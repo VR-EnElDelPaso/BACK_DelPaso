@@ -71,16 +71,9 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
       data: {
         user_id: userId,
         total,
-        status: "PENDING",
-        tours: {
-          connect: tours.map(tour => ({ id: tour.id }))
-        }
+        tours: { connect: tours.map(tour => ({ id: tour.id })) }
       },
-      include: {
-        tours: {
-          select: { id: true }
-        },
-      }
+      include: { tours: { select: { id: true } }, }
     });
 
     return res.status(201).json({

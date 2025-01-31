@@ -9,43 +9,50 @@ import { PaymentStatus, Tour } from "@prisma/client";
 
 export const webHookListenerController = async (req: Request, res: Response) => {
   const { body } = req;
-  console.log("Webhook received: ", body);
+  console.log("notification received: ", body);
 
-  // if (body.action !== "payment.created") res.send("Webhook received");
+  // Es necesario retornar un 200 para que Mercado Pago no siga enviando la notificación
+  if (body.action !== "payment.created") return res.send("Webhook received");
 
-  // const payment = new Payment(mpClient);
-  // const paymentInfo: PaymentResponse = await payment.get({
-  //   id: body.data.id
-  // })
+  // Buscar el pago en la API de Mercado Pago
+  const payment = new Payment(mpClient);
+  const paymentInfo: PaymentResponse = await payment.get({
+    id: body.data.id
+  })
 
-  // if(!paymentInfo) res.send("Webhook received");
-  // if (!validateUserId(paymentInfo.external_reference as string)) res.send("Webhook received");
-  // const items = paymentInfo.additional_info?.items
-  // const itemIds = items?.map((item) => item.id);
-  // if (!validateTourIds(itemIds ?? [])) res.send("Webhook received");
-  
-  // const paymentFound = await isPaymentExists(paymentInfo.id?.toString() ?? "");
-  // if (paymentFound) {
-  //   const paymentUpdated = await prisma.payment.update({
-  //     where: { payment_id: paymentInfo.id?.toString() ?? "" },
-  //     data: {
-  //       status: paymentInfo.status as PaymentStatus
-  //     }
-  //   })
-  //   console.log("Payment updated: ", paymentUpdated);
-  //   return res.send("Webhook received");
-  // }
+  // validar que el pago exista
+  if (!paymentInfo) res.send("Webhook received");
+  console.log("Payment info: ", {
+    id: paymentInfo.id,
+    status: paymentInfo.status,
+    external_reference: paymentInfo.external_reference,
+    additional_info: paymentInfo.additional_info?.items
+  });
 
-  // const createdPayment = await prisma.payment.create({
-  //   data: {
-  //     // user_id: paymentInfo.external_reference as string,
-  //     mercad_pago_id: paymentInfo.id?.toString() ?? "",
-  //     status: paymentInfo.status as PaymentStatus,
+  // validar validez de la orden
+  const foundOrder = await prisma.order.findUnique({ where: { id: paymentInfo.external_reference } });
+  if (!foundOrder) res.send("Webhook received");
+  console.log("Order found: ", foundOrder);
 
-  //   }
-  // })
-  // console.log("Payment created: ", createdPayment);
-  // return res.send("Webhook received");
+  if (paymentInfo.status === "approved") {
+    const updatedOrder = await prisma.order.update({
+      where: { id: paymentInfo.external_reference },
+      data: { status: "COMPLETED" }
+    })
+    console.log("Order updated: ", updatedOrder);
+    return res.send("Webhook received");
+  }
+
+  if (paymentInfo.status === "in_process" || paymentInfo.status === "pending") {
+    const updatedOrder = await prisma.order.update({
+      where: { id: paymentInfo.external_reference },
+      data: { status: "PENDING" }
+    })
+    console.log("Order updated: ", updatedOrder);
+    return res.send("Webhook received");
+  }
+
+  return res.send("Webhook received");
 }
 
 export const isPaymentExists = async (paymentId: string) => {
