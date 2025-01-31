@@ -11,10 +11,10 @@ async function main() {
 
   // Crear Tags
   const tags = await Promise.all([
-    prisma.tag.create({ data: { name: "University" } }),
-    prisma.tag.create({ data: { name: "Local" } }),
-    prisma.tag.create({ data: { name: "States" } }),
-    prisma.tag.create({ data: { name: "Country" } }),
+    prisma.tag.create({ data: { name: "universitario" } }),
+    prisma.tag.create({ data: { name: "local" } }),
+    prisma.tag.create({ data: { name: "otros estados" } }),
+    prisma.tag.create({ data: { name: "otros países" } }),
   ]);
 
   // Crear Museos
@@ -53,7 +53,7 @@ async function main() {
         museum_id: museums[0].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[0].id } } }, // University
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
             { tag: { connect: { id: tags[1].id } } }  // Local
           ]
         }
@@ -70,8 +70,7 @@ async function main() {
         museum_id: museums[1].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[1].id } } }, // Local
-            { tag: { connect: { id: tags[2].id } } }  // States
+            { tag: { connect: { id: tags[2].id } } }  // otros estados
           ]
         }
       },
@@ -87,8 +86,7 @@ async function main() {
         museum_id: museums[0].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[2].id } } }, // States
-            { tag: { connect: { id: tags[3].id } } }  // Country
+            { tag: { connect: { id: tags[3].id } } }  // otros países
           ]
         }
       },
@@ -105,7 +103,6 @@ async function main() {
         tags: {
           create: [
             { tag: { connect: { id: tags[1].id } } }, // Local
-            { tag: { connect: { id: tags[3].id } } }  // Country
           ]
         }
       },
