@@ -54,13 +54,6 @@ enum OrderStatus {
   REFUNDED // Pago reembolsado
 }
 
-enum TourTag {
-  University
-  Local
-  States
-  Country
-}
-
 model User {
   id             String @id @default(uuid())
   account_number Int?   @unique
@@ -151,7 +144,7 @@ model Tour {
   reviews   Review[]
   orders    Order[]
 
-  tags TourTag[] @default([]) //De esta manera podra almacenar tags en un array
+  tags      TourTag[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -207,4 +200,20 @@ model OpenHour {
   updated_at DateTime @updatedAt
 
   @@index([museum_id])
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  tours TourTag[]
+}
+
+model TourTag {
+  tour_id String
+  tag_id  String
+
+  tour Tour @relation(fields: [tour_id], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([tour_id, tag_id]) // Primary key compuesta
 }

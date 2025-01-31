@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-const TourTagEnum = z.enum(["University", "Local", "States", "Country"]);
-
 export const CreateTourSchema = z.object({
   name: z.string().min(3),
   description: z.string().min(10),
@@ -9,7 +7,7 @@ export const CreateTourSchema = z.object({
   url: z.string().url(),
   image_url: z.string().url(),
   museum_id: z.string().uuid(),
-  tags: z.array(TourTagEnum).default([]),
+  tags: z.array(z.string()).default([]),
 });
 
 // permit partial updates to patch a record

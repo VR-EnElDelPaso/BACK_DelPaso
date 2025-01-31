@@ -4,7 +4,6 @@ import prisma from '../prisma';
 import { z } from "zod";
 import { CreateTourSchema, EditTourSchema } from "../types/tours/ZodSchemas";
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllerUtils";
-import { TourTag } from "@prisma/client";
 
 const IdsSchema = z.array(z.string());
 
@@ -76,26 +75,57 @@ export const getAllToursController = async (req: Request, res: Response) => {
     const { tag } = req.query;
 
     let tours;
-    if (tag && Object.values(TourTag).includes(tag as TourTag)) {
+    if (tag) {
       tours = await prisma.tour.findMany({
-        where: { tags: { has: tag as TourTag } },
+        where: {
+          tags: {
+            some: {
+              tag: {
+                name: tag as string, // Filtra tours que tengan el tag solicitado
+              },
+            },
+          },
+        },
+        include: {
+          tags: {
+            include: {
+              tag: true, // Devuelve el objeto completo del `Tag`
+            },
+          },
+        },
       });
     } else {
-      tours = await prisma.tour.findMany();
+      tours = await prisma.tour.findMany({
+        include: {
+          tags: {
+            include: {
+              tag: true, // Devuelve el objeto completo del `Tag`
+            },
+          },
+        },
+      });
     }
+
+    // Formatear la respuesta para estructurar mejor los datos
+    const formattedTours = tours.map(tour => ({
+      ...tour,
+      tags: tour.tags.map(t => t.tag), // Extrae los objetos completos de `Tag`
+    }));
 
     return res.status(200).json({
       ok: true,
-      message: "Museums fetched successfully",
-      data: tours,
-    } as ResponseData);
+      message: "Tours fetched successfully",
+      data: formattedTours,
+    });
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      message: 'Error fetching tours',
-    } as ResponseData);
+      message: "Error fetching tours",
+      errors: (error as any).message,
+    });
   }
-}
+};
+
 
 export const getTourByIdController = async (req: Request, res: Response) => {
   try {
@@ -136,19 +166,26 @@ export const createTourController = async (req: Request, res: Response) => {
     if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
 
     const { tags, ...tourData } = bodyValidation.data;
-    
-    const validTags = Object.values(TourTag);
-    if (!tags.every(tag => validTags.includes(tag))) {
+
+    const foundTags = await prisma.tag.findMany({
+      where: { name: { in: tags } }
+    });
+
+    if (foundTags.length !== tags.length) {
       return res.status(400).json({
         ok: false,
-        message: 'Uno o más tags no son válidos',
+        message: 'Uno o más tags no existen en la base de datos',
       } as ResponseData);
     }
 
     const tour = await prisma.tour.create({
       data: {
         ...tourData,
-        tags,
+        tags: {
+          create: foundTags.map(tag => ({
+            tag: { connect: { id: tag.id } }
+          }))
+        }
       }
     });
 
@@ -183,34 +220,21 @@ export const editTourController = async (req: Request, res: Response) => {
     if (validateEmptyBody(bodyValidation.data)) return emptyBodyResponse(res);
 
     // filter only valid fields from the body
-    const validFields = Object.entries(bodyValidation.data)
-      .reduce((acc, [key, value]) => {
+    const validFields = Object.entries(bodyValidation.data).reduce(
+      (acc, [key, value]) => {
         if (value !== undefined) {
           acc[key] = value;
         }
         return acc;
-      }, {} as Record<string, any>);
-
-    // Extraer y validar los tags si están en la petición
-    let updatedTags = foundTour.tags;
-    if (bodyValidation.data.tags) {
-      const validTags = Object.values(TourTag);
-      if (!bodyValidation.data.tags.every(tag => validTags.includes(tag))) {
-        return res.status(400).json({
-          ok: false,
-          message: 'Uno o más tags no son válidos',
-        } as ResponseData);
-      }
-      updatedTags = bodyValidation.data.tags;
-    }
+      },
+      {} as Record<string, unknown>
+    );
+    
 
     // Update the tour
     const updatedTour = await prisma.tour.update({
       where: { id },
-      data: {
-        ...validFields,
-        tags: updatedTags, // Usar tags actualizados o mantener los existentes
-      }
+      data: validFields,
     });
 
     // Respond with the updated tour
