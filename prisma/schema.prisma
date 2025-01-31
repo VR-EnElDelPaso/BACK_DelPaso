@@ -77,7 +77,7 @@ model Order {
   id String @id @default(uuid())
 
   total  Decimal     @db.Decimal(10, 2)
-  status OrderStatus
+  status OrderStatus @default(CART)
   tours  Tour[]
 
   user_id String
