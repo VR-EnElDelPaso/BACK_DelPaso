@@ -23,8 +23,8 @@ const PatchOrderSchema = z.object({
 // get one
 export const getOneOrderController: RequestHandler = async (req: Request, res: Response) => {
   try {
-    validateIdAndRespond(res, req.params.id);
-    const orderId = req.params.id;
+    const orderId = validateIdAndRespond(res, req.params.order_id);
+    if (!orderId) return;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
@@ -90,8 +90,8 @@ export const createOneOrderController: RequestHandler = async (req: Request, res
 // edit/patch one
 export const patchOrderController: RequestHandler = async (req: Request, res: Response) => {
   try {
-
     const orderId = validateIdAndRespond(res, req.params.order_id);
+    if (!orderId) return;
 
     // order validation
     const foundOrder = await prisma.order.findUnique({ where: { id: orderId } });
