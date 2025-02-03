@@ -54,7 +54,7 @@ app.use(morgan("dev"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/Metadata", metadataRoutes);
-app.use("/api/tour", tourRoutes);
+app.use("/api/tours", tourRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/webhooks", mpWebHookRoutes);
 app.use("/api/user", userRoutes);
