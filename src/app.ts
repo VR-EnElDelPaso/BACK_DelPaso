@@ -14,7 +14,7 @@ import userRoutes from "./routes/user.routes";
 import reviewsRoutes from "./routes/reviews.routes";
 import museumsRoutes from "./routes/museums.routes";
 import storageRoutes from "./routes/storage.routes";
-import mpWebHookRoutes from "./routes/mp_web_hook.routes";
+import mpWebHookRoutes from "./routes/webhook.routes";
 import orderRoutes from "./routes/order.routes";
 // middlewares
 import { AuthMiddleware } from "./middlewares";
@@ -54,9 +54,9 @@ app.use(morgan("dev"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/Metadata", metadataRoutes);
-app.use("/api/tour", tourRoutes);
+app.use("/api/tours", tourRoutes);
 app.use("/api/preferences", preferenceRoutes);
-app.use("/api/mp-web-hook", mpWebHookRoutes);
+app.use("/api/webhooks", mpWebHookRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/reviews", reviewsRoutes)
 app.use("/api/museums", museumsRoutes);

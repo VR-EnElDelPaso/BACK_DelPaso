@@ -4,12 +4,14 @@ import { ResponseData } from "../types/ResponseData";
 
 export const validateIdAndRespond = (res: Response, id: string) => {
   const idValidation = z.string().uuid().safeParse(id);
-  if (!idValidation.success)
+  if (!idValidation.success) {
     res.status(400).json({
       ok: false,
       message: "Invalid id",
       errors: idValidation.error.format()["_errors"],
     } as unknown as ResponseData);
+    return null;
+  }
   return idValidation.data;
 }
 
