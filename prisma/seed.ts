@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,50 @@ async function main() {
   await prisma.tour.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.museum.deleteMany();
+  await prisma.user.deleteMany(); // Añadido para limpiar usuarios existentes
+
+  // Crear 4 usuarios (2 estudiantes y 2 visitantes)
+  const users = await Promise.all([
+    prisma.user.create({
+      data: {
+        account_number: 20183890,
+        name: 'Miguel Angel',
+        display_name: 'Miguel',
+        email: 'miguel@example.com',
+        role: 'STUDENT',
+        password: bcrypt.hashSync('password'),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        name: 'Admin',
+        display_name: 'Admin',
+        email: 'admin@admin.com',
+        role: 'ADMIN',
+        password: bcrypt.hashSync('tamaldepollo'),
+      },
+    }),
+    prisma.user.create({
+      data: {
+        account_number: 30001234,
+        name: 'Carlos Rodríguez',
+        display_name: 'Carlos',
+        email: 'carlos@example.com',
+        role: 'WORKER',
+        password: bcrypt.hashSync('password'), // Añadido password por seguridad
+      },
+    }),
+    prisma.user.create({
+      data: {
+        account_number: 30005678,
+        name: 'Laura Martínez',
+        display_name: 'Laura',
+        email: 'laura@example.com',
+        role: 'VISITOR',
+        password: bcrypt.hashSync('password'), // Añadido password por seguridad
+      },
+    }),
+  ]);
 
   // Crear Tags
   const tags = await Promise.all([
