@@ -7,6 +7,7 @@ export const CreateTourSchema = z.object({
   url: z.string().url(),
   image_url: z.string().url(),
   museum_id: z.string().uuid(),
+  tags: z.array(z.string()).default([]),
 });
 
 // permit partial updates to patch a record
