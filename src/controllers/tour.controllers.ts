@@ -148,7 +148,16 @@ export const getTourByIdController = async (req: Request, res: Response) => {
       } as unknown as ResponseData);
     const id = idValidation.data;
 
-    const tour = await prisma.tour.findUnique({ where: { id } });
+    const tour = await prisma.tour.findUnique({
+      where: { id },
+      include: {
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
 
     if (!tour)
       return res.status(404).json({
@@ -156,10 +165,16 @@ export const getTourByIdController = async (req: Request, res: Response) => {
         message: "Tour not found",
       } as ResponseData);
 
+    // Formatear la respuesta para estructurar mejor los datos
+    const formattedTour = {
+      ...tour,
+      tags: tour.tags.map((t) => t.tag), // Extrae los objetos completos de Tag
+    };
+
     return res.status(200).json({
       ok: true,
       message: "Tour fetched successfully",
-      data: tour,
+      data: formattedTour,
     } as ResponseData);
   } catch (error) {
     return res.status(500).json({
