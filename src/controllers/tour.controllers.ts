@@ -193,24 +193,25 @@ export const createTourController = async (req: Request, res: Response) => {
 
     const { tags, ...tourData } = bodyValidation.data;
 
-    const foundTags = await prisma.tag.findMany({
-      where: { name: { in: tags } },
-    });
-
-    if (!tags || foundTags.length !== tags.length) {
-      return res.status(400).json({
-        ok: false,
-        message: "Uno o más tags no existen en la base de datos",
-      } as ResponseData);
-    }
-
+    // Crear el tour con sus tags
     const tour = await prisma.tour.create({
       data: {
         ...tourData,
+        tags: tags
+          ? {
+              create: tags.map((tagId) => ({
+                tag: {
+                  connect: { id: tagId },
+                },
+              })),
+            }
+          : undefined,
+      },
+      include: {
         tags: {
-          create: foundTags.map((tag) => ({
-            tag: { connect: { id: tag.id } },
-          })),
+          include: {
+            tag: true,
+          },
         },
       },
     });
@@ -218,9 +219,13 @@ export const createTourController = async (req: Request, res: Response) => {
     return res.status(201).json({
       ok: true,
       message: "Tour created successfully",
-      data: tour,
+      data: {
+        ...tour,
+        tags: tour.tags.map((t) => t.tag),
+      },
     } as ResponseData);
   } catch (error) {
+    console.error("Error creating tour:", error);
     return res.status(500).json({
       ok: false,
       message: "Error creating tour",
