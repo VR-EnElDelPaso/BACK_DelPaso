@@ -24,3 +24,37 @@ export const sendVerificationEmail = async (
       throw new Error(`Error sending verification email: ${error}`);
     }
   };
+
+  export const sendPasswordResetEmail = async (email: string, resetURL: string): Promise<void> => {
+    const recipient = [{ email }];
+    try {
+        const response = await mailtrapClient.send({
+            from: sender,
+            to: recipient,
+            subject: "Reset your password",
+            html: PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetURL),
+            category: "Password reset"
+        });
+    } catch (error) {
+        console.error(`Error sending password reset email`, error);
+        throw new Error(`Error sending password reset email: ${error}`);
+    }
+};
+
+export const sendEmailResetSuccess = async (email: string): Promise<void> => {
+  const recipient = [{ email }];
+  try {
+      const response = await mailtrapClient.send({
+          from: sender,
+          to: recipient,
+          subject: "Password Reset Successful",
+          html: PASSWORD_RESET_SUCCESS_TEMPLATE,
+          category: "Password Reset"
+      });
+
+      console.log("Password reset email sent successfully");
+  } catch (error) {
+      console.error("Error sending password reset success email", error);
+      throw new Error(`Error sending password reset success email: ${error}`);
+  }
+};
