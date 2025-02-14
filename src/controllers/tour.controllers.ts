@@ -104,6 +104,7 @@ export const getAllToursController = async (req: Request, res: Response) => {
             },
           },
         },
+        orderBy: { created_at: "desc" },
       });
     } else {
       tours = await prisma.tour.findMany({
@@ -114,6 +115,7 @@ export const getAllToursController = async (req: Request, res: Response) => {
             },
           },
         },
+        orderBy: { created_at: "desc" },
       });
     }
 
@@ -199,12 +201,12 @@ export const createTourController = async (req: Request, res: Response) => {
         ...tourData,
         tags: tags
           ? {
-              create: tags.map((tagId) => ({
-                tag: {
-                  connect: { id: tagId },
-                },
-              })),
-            }
+            create: tags.map((tagId) => ({
+              tag: {
+                connect: { id: tagId },
+              },
+            })),
+          }
           : undefined,
       },
       include: {
