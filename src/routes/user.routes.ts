@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 import bcrypt from "bcryptjs";
+import { sendVerificationEmail } from "../mailtrap/email";
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.post("/new", async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'User registration failed' });
     }
 
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -48,9 +50,13 @@ router.post("/new", async (req: Request, res: Response) => {
         display_name,
         email,
         password: hashedPassword,
-        role
+        role,
+        verificationToken,
+        verificationTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
+
       }
     });
+    sendVerificationEmail(email, verificationToken);
     res.status(201).json(user);
   } catch (error) {
     console.log(error);
