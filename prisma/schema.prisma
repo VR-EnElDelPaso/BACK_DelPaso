@@ -192,6 +192,7 @@ model Review {
 
 model OpenHour {
   id         String   @id @default(uuid())
+  is_open    Boolean  @default(false)
   day        Day
   open_time  String
   close_time String
