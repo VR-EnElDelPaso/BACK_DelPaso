@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 import bcrypt from "bcryptjs";
-import { sendVerificationEmail } from "../mailtrap/email";
+import { sendVerificationEmail } from "../services/email.services";
 
 const router = Router();
 
@@ -37,7 +37,7 @@ router.post("/new", async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'User registration failed' });
+      return res.status(409).json({ error: 'User already exists' });
     }
 
     const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
@@ -52,11 +52,10 @@ router.post("/new", async (req: Request, res: Response) => {
         password: hashedPassword,
         role,
         verificationToken,
-        verificationTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000)
-
+        verificationTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       }
     });
-    sendVerificationEmail(email, verificationToken);
+    sendVerificationEmail(user.email, verificationToken);
     res.status(201).json(user);
   } catch (error) {
     console.log(error);

@@ -1,26 +1,24 @@
-import { mailtrapClient, sender } from "./mailtrap.config";
-import { VERIFICATION_EMAIL_TEMPLATE, PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE } from "./email.templates";
-
-type Recipient = { email: string; };
+import { transporter, sender } from "../config/email.config";
+import nodemailer from 'nodemailer';
+import { verificationEmailTemplate } from "../templates/email.templates";
 
 export const sendVerificationEmail = async (
-    email: string, 
-    verificationToken: string
+    to: string, 
+    token: string
   ): Promise<void> => {
-    const recipient: Recipient[] = [{ email }];
   
     try {
-      const response = await mailtrapClient.send({
+      const mailOptions: nodemailer.SendMailOptions = {
         from: sender,
-        to: recipient,
-        subject: "Verify your email!",
-        html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken),
-        category: "Email verification",
-      });
+        to,
+        subject: "Verifica tu cuenta MUVI 😊",
+        html: verificationEmailTemplate(token),
+      };
   
-      console.log("Email sent successfully", response);
+      const response = await transporter.sendMail(mailOptions);
+      console.log("Email enviado con éxito", response.messageId);
     } catch (error) {
-      console.error("Error sending verification email", error);
-      throw new Error(`Error sending verification email: ${error}`);
+      console.error("Error enviando el correo de verificación", error);
+      throw new Error(`Error enviando el correo de verificación: ${error}`);
     }
   };
