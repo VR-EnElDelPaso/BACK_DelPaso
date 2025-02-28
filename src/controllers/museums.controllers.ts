@@ -6,6 +6,22 @@ import { CreateMuseumSchema, EditMuseumSchema } from "../types/museums/ZodSchema
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllerUtils";
 
 
+const handleOpenHours = async (museumId: string, hours: any[]) => {
+  await prisma.openHour.deleteMany({ where: { museum_id: museumId } });
+
+  if (hours.length > 0) {
+    await prisma.openHour.createMany({
+      data: hours.map(hour => ({
+        museum_id: museumId,
+        day: hour.day,
+        is_open: hour.isOpen,
+        open_time: hour.openTime || "",
+        close_time: hour.closeTime || ""
+      }))
+    });
+  }
+};
+
 // ----[ CRUD ]----
 
 // Get all museums
@@ -49,7 +65,10 @@ export const createMuseumController = async (req: Request, res: Response) => {
   const bodyValidation = CreateMuseumSchema.safeParse(req.body);
   if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
 
-  const museum = await prisma.museum.create({ data: bodyValidation.data });
+  const { open_hours, ...museumData } = bodyValidation.data;
+  const museum = await prisma.museum.create({ data: museumData });
+
+  await handleOpenHours(museum.id, open_hours);
   
   return res.status(201).json({
     ok: true,

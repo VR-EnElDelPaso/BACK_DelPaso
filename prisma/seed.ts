@@ -77,8 +77,55 @@ async function main() {
         name: 'Museo de Arte Moderno',
         description: 'Museo con exposiciones de pinturas y esculturas',
         address_name: 'Calle 2, Ciudad',
-        main_photo: 'https://placehold.co/400'
-      },
+        main_photo: 'https://placehold.co/400',
+        open_hours: {
+          create: [
+            {
+              day: 'MONDAY',
+              is_open: true,
+              open_time: '09:00',
+              close_time: '18:00',
+            },
+            {
+              day: 'TUESDAY',
+              is_open: true,
+              open_time: '09:00',
+              close_time: '18:00',
+            },
+            {
+              day: 'WEDNESDAY',
+              is_open: true,
+              open_time: '09:00',
+              close_time: '18:00',
+            },
+            {
+              day: 'THURSDAY',
+              is_open: true,
+              open_time: '09:00',
+              close_time: '18:00',
+            },
+            {
+              day: 'FRIDAY',
+              is_open: true,
+              open_time: '09:00',
+              close_time: '18:00',
+            },
+            {
+              day: 'SATURDAY',
+              is_open: false,
+              open_time: '',
+              close_time: '',
+            },
+            {
+              day: 'SUNDAY',
+              is_open: false,
+              open_time: '',
+              close_time: '',
+            }
+          ]
+        }
+      }
+      ,
     }),
   ]);
 
