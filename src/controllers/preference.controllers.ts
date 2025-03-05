@@ -7,7 +7,7 @@ import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create
 import { ResponseData } from '../types/ResponseData';
 import { generateAccessToken } from "../utils/generateTokenTour";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
-import { invalidBodyResponse, notFoundResponse } from "../utils/controllerUtils";
+import { invalidBodyResponse, notFoundResponse } from "../utils/controller.utils";
 
 const PostBodyValidation = z.object({
   order_id: z.string().uuid(),

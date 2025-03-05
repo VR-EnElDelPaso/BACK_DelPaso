@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
+import { verifyRolesMiddleware } from "../middlewares/auth.middlewares";
 
 const router = Router();
 
@@ -16,13 +17,13 @@ router.post("/from-array", getToursFromIdsController);
 router.post("/suggestion", getTourSuggestionsController);
 
 // create one
-router.post("/", createTourController);
+router.post("/", [verifyRolesMiddleware(["ADMIN"])], createTourController);
 
 // edit one
-router.patch("/:id", editTourController);
+router.patch("/:id", [verifyRolesMiddleware(["ADMIN"])], editTourController);
 
 // delete one
-router.delete("/:id", deleteTourController);
+router.delete("/:id", verifyRolesMiddleware(["ADMIN"]), deleteTourController);
 
 
 

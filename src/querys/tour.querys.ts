@@ -12,7 +12,7 @@
  *   select: TourSelectQuery,
  * });
  */
-export const TourSelectQuery = {
+export const TourWithoutUrlSelectQuery = {
   id: true,          // ID único del tour
   name: true,        // Nombre del tour
   description: true, // Descripción del tour
@@ -32,4 +32,9 @@ export const TourSelectQuery = {
       },
     },
   },
+};
+
+export const TourWithUrlSelectQuery = {
+  ...TourWithoutUrlSelectQuery,
+  url: true, // URL del tour
 };
