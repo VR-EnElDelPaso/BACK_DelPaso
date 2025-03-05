@@ -2,127 +2,31 @@ import { RequestHandler, Request, Response } from "express";
 import { ResponseData } from "../types/ResponseData";
 import prisma from "../prisma";
 import { z } from "zod";
-import { CreateTourSchema, EditTourSchema } from "../types/tours/ZodSchemas";
 import {
-  emptyBodyResponse,
   invalidBodyResponse,
   notFoundResponse,
-  validateEmptyBody,
   validateIdAndRespond,
 } from "../utils/controllerUtils";
+import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
+import { TourSelectQuery } from "../querys/tour.querys";
 
-const IdsSchema = z.array(z.string());
 
-export const getToursFromIds: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const result = IdsSchema.safeParse(req.body.ids);
 
-  if (!result.success) {
-    return res.status(400).json({
-      ok: false,
-      message: "Invalid ids",
-    } as ResponseData);
-  }
-
-  const ids = result.data;
-
-  try {
-    const foundTours = await prisma.tour.findMany({
-      where: { id: { in: ids } },
-    });
-    return res.status(200).json({
-      ok: true,
-      message: "Tours fetched successfully",
-      data: foundTours,
-    } as ResponseData);
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Error fetching tours",
-    } as ResponseData);
-  }
-};
-
-export const getTourSuggestions: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const { excludedIds } = req.body;
-  const take = parseInt(req.query.take as string) || 10;
-
-  const result = IdsSchema.safeParse(excludedIds);
-
-  if (!result.success) {
-    return res.status(400).json({
-      ok: false,
-      message: "Invalid excludedIds",
-    } as ResponseData);
-  }
-
-  const ids = result.data;
-
-  try {
-    const foundTours = await prisma.tour.findMany({
-      where: { id: { notIn: ids } },
-      take,
-    });
-    return res.status(200).json({
-      ok: true,
-      message: "Tours suggestions fetched successfully",
-      data: foundTours,
-    } as ResponseData);
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Error fetching tours",
-    } as ResponseData);
-  }
-};
+// ----[ CRUD methods ]----
 
 export const getAllToursController = async (req: Request, res: Response) => {
   try {
     const { tag } = req.query;
 
-    let tours;
-    if (tag) {
-      tours = await prisma.tour.findMany({
-        where: {
-          tags: {
-            some: {
-              tag: {
-                name: tag as string, // Filtra tours que tengan el tag solicitado
-              },
-            },
-          },
-        },
-        include: {
-          tags: {
-            include: {
-              tag: true, // Devuelve el objeto completo del `Tag`
-            },
-          },
-        },
-        orderBy: { created_at: "desc" },
-      });
-    } else {
-      tours = await prisma.tour.findMany({
-        include: {
-          tags: {
-            include: {
-              tag: true, // Devuelve el objeto completo del `Tag`
-            },
-          },
-        },
-        orderBy: { created_at: "desc" },
-      });
-    }
+    const tours = await prisma.tour.findMany({
+      where: tag ? { tags: { some: { tag: { name: tag as string } } } } : {},
+      select: TourSelectQuery,
+      orderBy: { created_at: "desc" },
+    });
 
-    // Formatear la respuesta para estructurar mejor los datos
     const formattedTours = tours.map((tour) => ({
       ...tour,
-      tags: tour.tags.map((t) => t.tag), // Extrae los objetos completos de `Tag`
+      tags: tour.tags.map((t) => t.tag),
     }));
 
     return res.status(200).json({
@@ -152,13 +56,7 @@ export const getTourByIdController = async (req: Request, res: Response) => {
 
     const tour = await prisma.tour.findUnique({
       where: { id },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: TourSelectQuery,
     });
 
     if (!tour)
@@ -170,7 +68,7 @@ export const getTourByIdController = async (req: Request, res: Response) => {
     // Formatear la respuesta para estructurar mejor los datos
     const formattedTour = {
       ...tour,
-      tags: tour.tags.map((t) => t.tag), // Extrae los objetos completos de Tag
+      tags: tour.tags.map((t) => ({ id: t.tag })), // Extrae los IDs de Tag
     };
 
     return res.status(200).json({
@@ -209,13 +107,7 @@ export const createTourController = async (req: Request, res: Response) => {
           }
           : undefined,
       },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: TourSelectQuery,
     });
 
     return res.status(201).json({
@@ -281,13 +173,7 @@ export const editTourController = async (req: Request, res: Response) => {
     const updatedTour = await prisma.tour.update({
       where: { id },
       data: tourData,
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: TourSelectQuery,
     });
 
     return res.status(200).json({
@@ -314,7 +200,7 @@ export const deleteTourController = async (req: Request, res: Response) => {
     const id = req.params.id;
 
     // Check if tour exists
-    const foundTour = await prisma.tour.findUnique({ where: { id } });
+    const foundTour = await prisma.tour.findUnique({ where: { id }, select: TourSelectQuery });
     if (!foundTour) return notFoundResponse(res, "Tour");
 
     // Delete everything in order:
@@ -337,6 +223,114 @@ export const deleteTourController = async (req: Request, res: Response) => {
       ok: false,
       message: "Error deleting tour",
       errors: (error as any).message,
+    } as ResponseData);
+  }
+};
+
+
+
+// ----[ Other methods ]---
+
+/**
+ * Retrieves a list of tours based on an array of IDs provided in the request body.
+ * 
+ * - **ID Validation**: The IDs provided in the request body (`req.body.ids`) are validated
+ *   using a schema (`IdsSchema`) to ensure they are valid.
+ * - **Tour Query**: If the IDs are valid, a database query is performed to fetch the corresponding tours.
+ *   Only the fields defined in `TourSelectQuery` are selected.
+ * - **Response**: If the query is successful, the list of tours is returned. In case of an error,
+ *   an appropriate error message is returned.
+ */
+export const getToursFromIdsController: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  // Validate the IDs provided in the request body
+  const result = IdsSchema.safeParse(req.body.ids);
+
+  // If validation fails, return a 400 error
+  if (!result.success) {
+    return res.status(400).json({
+      ok: false,
+      message: "Invalid ids",
+    } as ResponseData);
+  }
+
+  // Extract the validated IDs
+  const ids = result.data;
+
+  try {
+    // Find the tours corresponding to the provided IDs
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { in: ids } }, // Filter tours by IDs
+      select: TourSelectQuery,    // Select only the fields defined in `TourSelectQuery`
+    });
+
+    // Return a successful response with the found tours
+    return res.status(200).json({
+      ok: true,
+      message: "Tours fetched successfully",
+      data: foundTours,
+    } as ResponseData);
+  } catch (error) {
+    // Handle unexpected errors and return a 500 error
+    return res.status(500).json({
+      ok: false,
+      message: "Error fetching tours",
+    } as ResponseData);
+  }
+};
+
+/**
+ * Retrieves a list of tour suggestions, excluding tours with specific IDs provided in the request body.
+ * 
+ * - **Excluded IDs**: The `excludedIds` array in the request body specifies which tours should be excluded
+ *   from the suggestions. These IDs are validated using `IdsSchema`.
+ * - **Pagination**: The `take` query parameter controls the number of suggestions to return (default is 10).
+ * - **Response**: If the query is successful, the list of suggested tours is returned. In case of an error,
+ *   an appropriate error message is returned.
+ */
+export const getTourSuggestionsController: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  // Extract `excludedIds` from the request body and `take` from the query parameters
+  const { excludedIds } = req.body;
+  const take = parseInt(req.query.take as string) || 10; // Default to 10 if `take` is not provided
+
+  // Validate the `excludedIds` array
+  const result = IdsSchema.safeParse(excludedIds);
+
+  // If validation fails, return a 400 error
+  if (!result.success) {
+    return res.status(400).json({
+      ok: false,
+      message: "Invalid excludedIds",
+    } as ResponseData);
+  }
+
+  // Extract the validated IDs
+  const ids = result.data;
+
+  try {
+    // Fetch tour suggestions, excluding the provided IDs and limiting the results to `take`
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { notIn: ids } }, // Exclude tours with the specified IDs
+      select: TourSelectQuery,       // Select only the fields defined in `TourSelectQuery`
+      take,                          // Limit the number of results
+    });
+
+    // Return a successful response with the suggested tours
+    return res.status(200).json({
+      ok: true,
+      message: "Tours suggestions fetched successfully",
+      data: foundTours,
+    } as ResponseData);
+  } catch (error) {
+    // Handle unexpected errors and return a 500 error
+    return res.status(500).json({
+      ok: false,
+      message: "Error fetching tours",
     } as ResponseData);
   }
 };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIds, getTourSuggestions } from '../controllers/tour.controllers';
+import { createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
 
 const router = Router();
 
@@ -10,10 +10,10 @@ router.get("/", getAllToursController);
 router.get("/:id", getTourByIdController);
 
 // get from array of ids
-router.post("/from-array", getToursFromIds);
+router.post("/from-array", getToursFromIdsController);
 
 // get suggestions
-router.post("/suggestion", getTourSuggestions);
+router.post("/suggestion", getTourSuggestionsController);
 
 // create one
 router.post("/", createTourController);
