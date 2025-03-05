@@ -230,7 +230,6 @@ model Page {
   updated_at  DateTime    @updatedAt
 
   // Relaciones
-  copies      Copy[]
   carousels   Carrousel[]
 }
 
@@ -283,8 +282,6 @@ model Copy {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Relaciones
-  page Page @relation(fields: [entity_id], references: [id], onDelete: Cascade)
 
   @@index([entity_id])
   @@index([parent_id])
