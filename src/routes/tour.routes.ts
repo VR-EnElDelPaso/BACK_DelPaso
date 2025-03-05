@@ -1,20 +1,16 @@
 import { Router } from "express";
-import { createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
-import { verifyRolesMiddleware } from "../middlewares/auth.middlewares";
+import { checkPurchasedTourController, createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
+import { authMiddleware, verifyRolesMiddleware } from "../middlewares/auth.middlewares";
 
 const router = Router();
+
+// ----[ CRUD ]----
 
 // get all
 router.get("/", getAllToursController);
 
 // get one
 router.get("/:id", getTourByIdController);
-
-// get from array of ids
-router.post("/from-array", getToursFromIdsController);
-
-// get suggestions
-router.post("/suggestion", getTourSuggestionsController);
 
 // create one
 router.post("/", [verifyRolesMiddleware(["ADMIN"])], createTourController);
@@ -25,6 +21,18 @@ router.patch("/:id", [verifyRolesMiddleware(["ADMIN"])], editTourController);
 // delete one
 router.delete("/:id", verifyRolesMiddleware(["ADMIN"]), deleteTourController);
 
+
+
+// ----[ Special routes ]----
+
+// get from array of ids
+router.post("/from-array", getToursFromIdsController);
+
+// get suggestions
+router.post("/suggestion", getTourSuggestionsController);
+
+// check if user has purchased a tour
+router.get("/check-purchase/:id", [authMiddleware], checkPurchasedTourController);
 
 
 

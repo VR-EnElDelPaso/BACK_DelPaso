@@ -10,6 +10,7 @@ import {
 } from "../utils/controller.utils";
 import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
 import { TourWithoutUrlSelectQuery, TourWithUrlSelectQuery } from "../querys/tour.querys";
+import UserWithoutPassword from "../types/auth/UserWithoutPassword";
 
 
 
@@ -343,4 +344,73 @@ export const getTourSuggestionsController: RequestHandler = async (
       message: "Error fetching tours",
     } as ResponseData);
   }
+};
+
+/**
+ * checkPurchasedTourController - Controller to check if a tour has been purchased by the authenticated user.
+ * It verifies if the tour exists and if there is a completed or pending order associated with the tour and the user.
+ * If the tour is not found, it returns a 404 error. If the tour has not been purchased, it returns a 404 error with a message.
+ * If the tour has been purchased, it returns the tour and order details.
+ *
+ * @param {Request} req - The Express request object. It expects the tour ID in `req.params.id` and the authenticated user in `req.user`.
+ * @param {Response} res - The Express response object.
+ * @returns {Promise<void>} - Sends a JSON response with the result of the check.
+ *
+ * @example
+ * // Example request
+ * GET /tours/:id/check-purchased
+ *
+ * // Example response (success)
+ * {
+ *   ok: true,
+ *   message: "Tour purchased",
+ *   data: {
+ *     tour_id: "123",
+ *     order_id: "456"
+ *   }
+ * }
+ *
+ * // Example response (tour not found)
+ * {
+ *   ok: false,
+ *   message: "Tour not found"
+ * }
+ *
+ * // Example response (tour not purchased)
+ * {
+ *   ok: false,
+ *   message: "Tour not purchased"
+ * }
+ */
+export const checkPurchasedTourController: RequestHandler = async (req: Request, res: Response) => {
+  const user = req.user as UserWithoutPassword;
+
+  // Validate if the tour exists
+  const foundTour = await prisma.tour.findUnique({
+    where: { id: req.params.id },
+  });
+  if (!foundTour) return notFoundResponse(res, "Tour");
+
+  // Find a paid order associated with the tour and user
+  const foundOrder = await prisma.order.findFirst({
+    where: {
+      user_id: user.id,
+      tours: { some: { id: req.params.id } },
+      status: { in: ["COMPLETED", "PENDING"] },
+    },
+  });
+  if (!foundOrder) return res.status(404).json({
+    ok: false,
+    message: "Tour not purchased",
+  } as ResponseData);
+
+  // Return success response with tour and order details
+  return res.status(200).json({
+    ok: true,
+    message: "Tour purchased",
+    data: {
+      tour_id: foundTour.id,
+      order_id: foundOrder.id,
+    },
+  } as ResponseData);
 };
