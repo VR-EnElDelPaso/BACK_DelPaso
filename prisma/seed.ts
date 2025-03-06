@@ -5,6 +5,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Limpia la base de datos antes de insertar nuevos datos
+  await prisma.copy.deleteMany();
+  await prisma.slide.deleteMany();
+  await prisma.carrousel.deleteMany();
+  await prisma.page.deleteMany();
   await prisma.tourTag.deleteMany();
   await prisma.tour.deleteMany();
   await prisma.tag.deleteMany();
@@ -153,6 +157,153 @@ async function main() {
       },
     }),
   ]);
+
+  // Crear la landing page principal
+  const landingPage = await prisma.page.create({
+    data: {
+      name: 'Landing Page Principal',
+      description: 'Página de inicio del sitio web del museo'
+    }
+  });
+
+  // Crear algunos textos (copies) para la página de landing
+  await Promise.all([
+    prisma.copy.create({
+      data: {
+        entity_id: landingPage.id,
+        type: 'HEADER',
+        content: 'Bienvenidos al Museo',
+        weight: '1'
+      }
+    }),
+    prisma.copy.create({
+      data: {
+        entity_id: landingPage.id,
+        type: 'PARAGRAPH',
+        content: 'Descubre nuestras exhibiciones únicas y tours virtuales',
+        weight: '2'
+      }
+    }),
+    prisma.copy.create({
+      data: {
+        entity_id: landingPage.id,
+        type: 'BUTTON',
+        content: 'Explorar Tours',
+        weight: '3'
+      }
+    })
+  ]);
+
+  // Crear carrusel principal
+  const mainCarousel = await prisma.carrousel.create({
+    data: {
+      page_id: landingPage.id,
+      name: 'Novedades',
+      description: 'Carrusel de novedades del museo'
+    }
+  });
+
+  // Crear slides para el carrusel
+  const slides = await Promise.all([
+    prisma.slide.create({
+      data: {
+        carrousel_id: mainCarousel.id,
+        index: 0,
+        image_url: 'https://placehold.co/800x400/orange/white?text=Exhibición+Especial'
+      }
+    }),
+    prisma.slide.create({
+      data: {
+        carrousel_id: mainCarousel.id,
+        index: 1,
+        image_url: 'https://placehold.co/800x400/blue/white?text=Tours+Virtuales'
+      }
+    }),
+    prisma.slide.create({
+      data: {
+        carrousel_id: mainCarousel.id,
+        index: 2,
+        image_url: 'https://placehold.co/800x400/green/white?text=Eventos+Especiales'
+      }
+    })
+  ]);
+
+  console.log('Seeding base data completed');
+  
+  // Después de crear los slides, ahora creamos los títulos y descripciones como copies
+  const slideCopies = [];
+  
+  // Títulos y descripciones para el primer slide
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[0].id,
+        type: 'HEADER',
+        content: 'Nueva Exhibición: Dinosaurios',
+        weight: '1'
+      }
+    })
+  );
+  
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[0].id,
+        type: 'PARAGRAPH',
+        content: 'Descubre los fósiles más impresionantes de la era mesozoica',
+        weight: '2'
+      }
+    })
+  );
+  
+  // Títulos y descripciones para el segundo slide
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[1].id,
+        type: 'HEADER',
+        content: 'Tours Virtuales 360°',
+        weight: '1'
+      }
+    })
+  );
+  
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[1].id,
+        type: 'PARAGRAPH',
+        content: 'Explora el museo desde la comodidad de tu hogar',
+        weight: '2'
+      }
+    })
+  );
+  
+  // Títulos y descripciones para el tercer slide
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[2].id,
+        type: 'HEADER',
+        content: 'Noche en el Museo',
+        weight: '1'
+      }
+    })
+  );
+  
+  slideCopies.push(
+    prisma.copy.create({
+      data: {
+        entity_id: slides[2].id,
+        type: 'PARAGRAPH',
+        content: 'Visitas nocturnas especiales cada fin de semana',
+        weight: '2'
+      }
+    })
+  );
+  
+  // Ejecutar todas las operaciones de copia de slides
+  await Promise.all(slideCopies);
 
   console.log('Seeding executed successfully');
 }

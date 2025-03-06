@@ -41,3 +41,21 @@ export const operationErrorResponse = (res: Response) => {
     message: "Operation error",
   } as ResponseData);
 }
+
+export const handleControllerError = (error: unknown, res: Response) => {
+  console.error('Controller error:', error);
+  
+  if (error instanceof z.ZodError) {
+    return invalidBodyResponse(res, error);
+  }
+  
+  // Si el error tiene un mensaje específico
+  if (error instanceof Error) {
+    return res.status(500).json({
+      ok: false,
+      message: `Operation error: ${error.message}`
+    });
+  }
+  
+  return operationErrorResponse(res);
+};
