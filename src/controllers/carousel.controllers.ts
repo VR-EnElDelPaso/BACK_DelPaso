@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../prisma";
 import { z } from "zod";
 import { CarouselRequestSchema } from "../types/carousel/ZodSchemas";
-import { handleControllerError } from "../utils/controllerUtils";
+import { handleControllerError, notFoundResponse } from "../utils/controllerUtils";
 import { ResponseData } from "../types/ResponseData";
 
 export const getCarousels = async (req: Request, res: Response) => {
@@ -134,12 +134,7 @@ export const createCarousel = async (req: Request, res: Response) => {
       where: { id: page_id },
     });
 
-    if (!pageExists) {
-      return res.status(404).json({
-        ok: false,
-        message: "Page not found",
-      } as ResponseData);
-    }
+    if (!pageExists) return notFoundResponse(res, "Page");
 
     // Crear el carrusel con sus slides en una única transacción
     const result = await prisma.$transaction(async (tx) => {
@@ -226,12 +221,14 @@ export const updateCarousel = async (req: Request, res: Response) => {
       },
     });
 
-    if (!carouselExists) {
-      return res.status(404).json({
-        ok: false,
-        message: "Carousel not found",
-      } as ResponseData);
-    }
+    if (!carouselExists) return notFoundResponse(res, "Carousel");
+
+    // Verificar que la página existe
+    const pageExists = await prisma.page.findUnique({
+      where: { id: page_id },
+    });
+
+    if (!pageExists) return notFoundResponse(res, "Page");
 
     // Actualizar el carrusel con sus slides en una única transacción
     const result = await prisma.$transaction(async (tx) => {
@@ -330,12 +327,7 @@ export const deleteCarousel = async (req: Request, res: Response) => {
       },
     });
 
-    if (!carouselExists) {
-      return res.status(404).json({
-        ok: false,
-        message: "Carousel not found",
-      } as ResponseData);
-    }
+    if (!carouselExists) return notFoundResponse(res, "Carousel");
 
     // Eliminar el carrusel y sus slides en una única transacción
     await prisma.$transaction(async (tx) => {
