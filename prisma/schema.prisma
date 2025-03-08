@@ -221,3 +221,68 @@ model TourTag {
 
   @@id([tour_id, tag_id]) // Primary key compuesta
 }
+
+model Page {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+
+  // Relaciones
+  carousels   Carrousel[]
+}
+
+model Carrousel {
+  id          String   @id @default(uuid())
+  page_id     String
+  name        String
+  description String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relaciones
+  page   Page    @relation(fields: [page_id], references: [id], onDelete: Cascade)
+  slides Slide[]
+
+  @@index([page_id])
+}
+
+model Slide {
+  id           String   @id @default(uuid())
+  carrousel_id String
+  index        Int
+  image_url    String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relaciones
+  carrousel Carrousel @relation(fields: [carrousel_id], references: [id], onDelete: Cascade)
+
+  @@index([carrousel_id])
+}
+
+// Definición del enum para los tipos de copia
+enum CopyType {
+  HEADER
+  PARAGRAPH
+  BUTTON
+  SUBTITLE
+  LINK
+  CALLOUT
+}
+
+model Copy {
+  id         String   @id @default(uuid())
+  entity_id  String
+  parent_id  String?
+  type       CopyType
+  content    String
+  weight     String   // Para orden/prioridad
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+
+  @@index([entity_id])
+  @@index([parent_id])
+}

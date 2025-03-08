@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ResponseData } from "../types/ResponseData";
-import { RequestHandler, Request, Response } from "express";
+import { Request, Response } from "express";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
 
 export const validateIdAndRespond = (res: Response, id: string) => {
@@ -47,3 +47,21 @@ export const isAdminUser = (req: Request) => {
   console.log(req?.user);
   return (req?.user as UserWithoutPassword)?.role === "ADMIN";
 }
+
+export const handleControllerError = (error: unknown, res: Response) => {
+  console.error('Controller error:', error);
+  
+  if (error instanceof z.ZodError) {
+    return invalidBodyResponse(res, error);
+  }
+  
+  // Si el error tiene un mensaje específico
+  if (error instanceof Error) {
+    return res.status(500).json({
+      ok: false,
+      message: `Operation error: ${error.message}`
+    });
+  }
+  
+  return operationErrorResponse(res);
+};

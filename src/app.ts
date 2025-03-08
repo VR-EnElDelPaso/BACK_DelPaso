@@ -17,8 +17,10 @@ import storageRoutes from "./routes/storage.routes";
 import mpWebHookRoutes from "./routes/webhook.routes";
 import orderRoutes from "./routes/order.routes";
 import tagRoutes from './routes/tag.routes';
-import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
+import carouselRoutes from './routes/carousel.routes';
+
 // middlewares
+import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
 
 const app = express();
 
@@ -64,6 +66,7 @@ app.use("/api/museums", museumsRoutes);
 app.use("/api/storage", storageRoutes);
 app.use("/api/orders", orderRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/carousels', carouselRoutes);
 
 app.get("/", [authMiddleware], (req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
