@@ -18,8 +18,9 @@ import mpWebHookRoutes from "./routes/webhook.routes";
 import orderRoutes from "./routes/order.routes";
 import tagRoutes from './routes/tag.routes';
 import carouselRoutes from './routes/carousel.routes';
+
 // middlewares
-import { AuthMiddleware } from "./middlewares";
+import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
 
 const app = express();
 
@@ -56,7 +57,7 @@ app.use(morgan("dev"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/Metadata", metadataRoutes);
-app.use("/api/tours", tourRoutes);
+app.use("/api/tours", [setUserMiddleware], tourRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/webhooks", mpWebHookRoutes);
 app.use("/api/user", userRoutes);
@@ -67,7 +68,7 @@ app.use("/api/orders", orderRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/carousels', carouselRoutes);
 
-app.get("/", AuthMiddleware, (req: Request, res: Response) => {
+app.get("/", [authMiddleware], (req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
 });
 

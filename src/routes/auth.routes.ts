@@ -5,9 +5,9 @@ import { NextFunction, Request, Response, Router } from 'express';
 // local
 import UserWithoutPassword from '../types/auth/UserWithoutPassword';
 import passportInstance, { generateToken, samlStrategy } from '../passport';
-import { AuthMiddleware } from '../middlewares';
 import config from '../config';
 import ResponseData from '../types/auth/ResponseData';
+import { authMiddleware } from '../middlewares/auth.middlewares';
 
 const router = Router();
 const { clientUrl } = config.app;
@@ -59,7 +59,7 @@ router.get("/login/fail", (req: Request, res: Response) =>
 // --- Logout ---
 
 // saml logout
-router.get("/logout", AuthMiddleware, (req: any, res: Response, next: NextFunction) => {
+router.get("/logout", authMiddleware, (req: any, res: Response, next: NextFunction) => {
   samlStrategy.logout(req, (err, url) => {
 
     if (err) {

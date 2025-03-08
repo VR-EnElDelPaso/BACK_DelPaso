@@ -2,127 +2,33 @@ import { RequestHandler, Request, Response } from "express";
 import { ResponseData } from "../types/ResponseData";
 import prisma from "../prisma";
 import { z } from "zod";
-import { CreateTourSchema, EditTourSchema } from "../types/tours/ZodSchemas";
 import {
-  emptyBodyResponse,
   invalidBodyResponse,
+  isAdminUser,
   notFoundResponse,
-  validateEmptyBody,
   validateIdAndRespond,
-} from "../utils/controllerUtils";
+} from "../utils/controller.utils";
+import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
+import { TourWithoutUrlSelectQuery, TourWithUrlSelectQuery } from "../querys/tour.querys";
+import UserWithoutPassword from "../types/auth/UserWithoutPassword";
 
-const IdsSchema = z.array(z.string());
 
-export const getToursFromIds: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const result = IdsSchema.safeParse(req.body.ids);
 
-  if (!result.success) {
-    return res.status(400).json({
-      ok: false,
-      message: "Invalid ids",
-    } as ResponseData);
-  }
-
-  const ids = result.data;
-
-  try {
-    const foundTours = await prisma.tour.findMany({
-      where: { id: { in: ids } },
-    });
-    return res.status(200).json({
-      ok: true,
-      message: "Tours fetched successfully",
-      data: foundTours,
-    } as ResponseData);
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Error fetching tours",
-    } as ResponseData);
-  }
-};
-
-export const getTourSuggestions: RequestHandler = async (
-  req: Request,
-  res: Response
-) => {
-  const { excludedIds } = req.body;
-  const take = parseInt(req.query.take as string) || 10;
-
-  const result = IdsSchema.safeParse(excludedIds);
-
-  if (!result.success) {
-    return res.status(400).json({
-      ok: false,
-      message: "Invalid excludedIds",
-    } as ResponseData);
-  }
-
-  const ids = result.data;
-
-  try {
-    const foundTours = await prisma.tour.findMany({
-      where: { id: { notIn: ids } },
-      take,
-    });
-    return res.status(200).json({
-      ok: true,
-      message: "Tours suggestions fetched successfully",
-      data: foundTours,
-    } as ResponseData);
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Error fetching tours",
-    } as ResponseData);
-  }
-};
+// ----[ CRUD methods ]----
 
 export const getAllToursController = async (req: Request, res: Response) => {
   try {
     const { tag } = req.query;
 
-    let tours;
-    if (tag) {
-      tours = await prisma.tour.findMany({
-        where: {
-          tags: {
-            some: {
-              tag: {
-                name: tag as string, // Filtra tours que tengan el tag solicitado
-              },
-            },
-          },
-        },
-        include: {
-          tags: {
-            include: {
-              tag: true, // Devuelve el objeto completo del `Tag`
-            },
-          },
-        },
-        orderBy: { created_at: "desc" },
-      });
-    } else {
-      tours = await prisma.tour.findMany({
-        include: {
-          tags: {
-            include: {
-              tag: true, // Devuelve el objeto completo del `Tag`
-            },
-          },
-        },
-        orderBy: { created_at: "desc" },
-      });
-    }
+    const tours = await prisma.tour.findMany({
+      where: tag ? { tags: { some: { tag: { name: tag as string } } } } : {},
+      select: isAdminUser(req) ? TourWithUrlSelectQuery : TourWithoutUrlSelectQuery,
+      orderBy: { created_at: "desc" },
+    });
 
-    // Formatear la respuesta para estructurar mejor los datos
     const formattedTours = tours.map((tour) => ({
       ...tour,
-      tags: tour.tags.map((t) => t.tag), // Extrae los objetos completos de `Tag`
+      tags: tour.tags.map((t) => t.tag),
     }));
 
     return res.status(200).json({
@@ -152,13 +58,7 @@ export const getTourByIdController = async (req: Request, res: Response) => {
 
     const tour = await prisma.tour.findUnique({
       where: { id },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: isAdminUser(req) ? TourWithUrlSelectQuery : TourWithoutUrlSelectQuery,
     });
 
     if (!tour)
@@ -170,7 +70,7 @@ export const getTourByIdController = async (req: Request, res: Response) => {
     // Formatear la respuesta para estructurar mejor los datos
     const formattedTour = {
       ...tour,
-      tags: tour.tags.map((t) => t.tag), // Extrae los objetos completos de Tag
+      tags: tour.tags.map((t) => ({ id: t.tag })), // Extrae los IDs de Tag
     };
 
     return res.status(200).json({
@@ -192,8 +92,17 @@ export const createTourController = async (req: Request, res: Response) => {
     const bodyValidation = CreateTourSchema.safeParse(req.body);
     if (!bodyValidation.success)
       return invalidBodyResponse(res, bodyValidation.error);
-
     const { tags, ...tourData } = bodyValidation.data;
+
+    // validate museum_id
+    const foundMuseum = await prisma.museum.findUnique({
+      where: { id: tourData?.museum_id },
+    });
+    if (!foundMuseum)
+      return res.status(404).json({
+        ok: false,
+        message: "Museum not found",
+      } as ResponseData);
 
     // Crear el tour con sus tags
     const tour = await prisma.tour.create({
@@ -209,13 +118,7 @@ export const createTourController = async (req: Request, res: Response) => {
           }
           : undefined,
       },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: TourWithUrlSelectQuery,
     });
 
     return res.status(201).json({
@@ -281,13 +184,7 @@ export const editTourController = async (req: Request, res: Response) => {
     const updatedTour = await prisma.tour.update({
       where: { id },
       data: tourData,
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
+      select: TourWithUrlSelectQuery,
     });
 
     return res.status(200).json({
@@ -314,7 +211,7 @@ export const deleteTourController = async (req: Request, res: Response) => {
     const id = req.params.id;
 
     // Check if tour exists
-    const foundTour = await prisma.tour.findUnique({ where: { id } });
+    const foundTour = await prisma.tour.findUnique({ where: { id }, select: TourWithUrlSelectQuery });
     if (!foundTour) return notFoundResponse(res, "Tour");
 
     // Delete everything in order:
@@ -339,4 +236,159 @@ export const deleteTourController = async (req: Request, res: Response) => {
       errors: (error as any).message,
     } as ResponseData);
   }
+};
+
+
+
+// ----[ Other methods ]---
+
+/**
+ * Retrieves a list of tours based on an array of IDs provided in the request body.
+ * 
+ * - **ID Validation**: The IDs provided in the request body (`req.body.ids`) are validated
+ *   using a schema (`IdsSchema`) to ensure they are valid.
+ * - **Tour Query**: If the IDs are valid, a database query is performed to fetch the corresponding tours.
+ *   Only the fields defined in `TourSelectQuery` are selected.
+ * - **Response**: If the query is successful, the list of tours is returned. In case of an error,
+ *   an appropriate error message is returned.
+ */
+export const getToursFromIdsController: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  // Validate the IDs provided in the request body
+  const result = IdsSchema.safeParse(req.body.ids);
+
+  // If validation fails, return a 400 error
+  if (!result.success) {
+    return res.status(400).json({
+      ok: false,
+      message: "Invalid ids",
+    } as ResponseData);
+  }
+
+  // Extract the validated IDs
+  const ids = result.data;
+
+  try {
+    // Find the tours corresponding to the provided IDs
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { in: ids } }, // Filter tours by IDs
+      select: isAdminUser(req) ? TourWithUrlSelectQuery : TourWithoutUrlSelectQuery,
+    });
+
+    // Return a successful response with the found tours
+    return res.status(200).json({
+      ok: true,
+      message: "Tours fetched successfully",
+      data: foundTours,
+    } as ResponseData);
+  } catch (error) {
+    // Handle unexpected errors and return a 500 error
+    return res.status(500).json({
+      ok: false,
+      message: "Error fetching tours",
+    } as ResponseData);
+  }
+};
+
+/**
+ * Retrieves a list of tour suggestions, excluding tours with specific IDs provided in the request body.
+ * 
+ * - **Excluded IDs**: The `excludedIds` array in the request body specifies which tours should be excluded
+ *   from the suggestions. These IDs are validated using `IdsSchema`.
+ * - **Pagination**: The `take` query parameter controls the number of suggestions to return (default is 10).
+ * - **Response**: If the query is successful, the list of suggested tours is returned. In case of an error,
+ *   an appropriate error message is returned.
+ */
+export const getTourSuggestionsController: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  // Extract `excludedIds` from the request body and `take` from the query parameters
+  const { excludedIds } = req.body;
+  const take = parseInt(req.query.take as string) || 10; // Default to 10 if `take` is not provided
+
+  // Validate the `excludedIds` array
+  const result = IdsSchema.safeParse(excludedIds);
+
+  // If validation fails, return a 400 error
+  if (!result.success) {
+    return res.status(400).json({
+      ok: false,
+      message: "Invalid excludedIds",
+    } as ResponseData);
+  }
+
+  // Extract the validated IDs
+  const ids = result.data;
+
+  try {
+    // Fetch tour suggestions, excluding the provided IDs and limiting the results to `take`
+    const foundTours = await prisma.tour.findMany({
+      where: { id: { notIn: ids } }, // Exclude tours with the specified IDs
+      select: isAdminUser(req) ? TourWithUrlSelectQuery : TourWithoutUrlSelectQuery,
+      take,                          // Limit the number of results
+    });
+
+    // Return a successful response with the suggested tours
+    return res.status(200).json({
+      ok: true,
+      message: "Tours suggestions fetched successfully",
+      data: foundTours,
+    } as ResponseData);
+  } catch (error) {
+    // Handle unexpected errors and return a 500 error
+    return res.status(500).json({
+      ok: false,
+      message: "Error fetching tours",
+    } as ResponseData);
+  }
+};
+
+/**
+ * checkPurchasedTourController - Controller to check if a tour has been purchased by the authenticated user.
+ * It verifies if the tour exists and if there is a completed or pending order associated with the tour and the user.
+ * If the tour is not found, it returns a 404 error. If the tour has not been purchased, it returns a 404 error with a message.
+ * If the tour has been purchased, it returns the tour and order details.
+ *
+ * @param {Request} req - The Express request object. It expects the tour ID in `req.params.id` and the authenticated user in `req.user`.
+ * @param {Response} res - The Express response object.
+ * @returns {Promise<Response>} - A response with the status code and a JSON object with the result.
+ */
+export const checkPurchasedTourController: RequestHandler = async (req: Request, res: Response): Promise<Response> => {
+  const user = req.user as UserWithoutPassword;
+
+  // Validate if the tour exists
+  const foundTour = await prisma.tour.findUnique({
+    where: { id: req.params.id },
+  });
+  if (!foundTour) return notFoundResponse(res, "Tour");
+
+  // Find a paid order associated with the tour and user
+  const foundOrder = await prisma.order.findFirst({
+    where: {
+      user_id: user.id,
+      tours: { some: { id: req.params.id } },
+      status: { in: ["COMPLETED", "PENDING"] },
+    },
+  });
+  if (!foundOrder) return res.status(200).json({
+    ok: true,
+    message: "Tour not purchased",
+    data: {
+      purchased: false,
+    }
+  } as ResponseData);
+
+  // Return success response with tour and order details
+  return res.status(200).json({
+    ok: true,
+    message: "Tour purchased",
+    data: {
+      purchased: true,
+      tour_id: foundTour.id,
+      order_id: foundOrder.id,
+    },
+  } as ResponseData);
 };
