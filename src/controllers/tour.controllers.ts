@@ -354,35 +354,9 @@ export const getTourSuggestionsController: RequestHandler = async (
  *
  * @param {Request} req - The Express request object. It expects the tour ID in `req.params.id` and the authenticated user in `req.user`.
  * @param {Response} res - The Express response object.
- * @returns {Promise<void>} - Sends a JSON response with the result of the check.
- *
- * @example
- * // Example request
- * GET /tours/:id/check-purchased
- *
- * // Example response (success)
- * {
- *   ok: true,
- *   message: "Tour purchased",
- *   data: {
- *     tour_id: "123",
- *     order_id: "456"
- *   }
- * }
- *
- * // Example response (tour not found)
- * {
- *   ok: false,
- *   message: "Tour not found"
- * }
- *
- * // Example response (tour not purchased)
- * {
- *   ok: false,
- *   message: "Tour not purchased"
- * }
+ * @returns {Promise<Response>} - A response with the status code and a JSON object with the result.
  */
-export const checkPurchasedTourController: RequestHandler = async (req: Request, res: Response) => {
+export const checkPurchasedTourController: RequestHandler = async (req: Request, res: Response): Promise<Response> => {
   const user = req.user as UserWithoutPassword;
 
   // Validate if the tour exists
@@ -399,9 +373,12 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
       status: { in: ["COMPLETED", "PENDING"] },
     },
   });
-  if (!foundOrder) return res.status(404).json({
-    ok: false,
+  if (!foundOrder) return res.status(200).json({
+    ok: true,
     message: "Tour not purchased",
+    data: {
+      purchased: false,
+    }
   } as ResponseData);
 
   // Return success response with tour and order details
@@ -409,6 +386,7 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
     ok: true,
     message: "Tour purchased",
     data: {
+      purchased: true,
       tour_id: foundTour.id,
       order_id: foundOrder.id,
     },

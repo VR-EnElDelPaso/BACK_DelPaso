@@ -32,7 +32,7 @@ router.post("/from-array", getToursFromIdsController);
 router.post("/suggestion", getTourSuggestionsController);
 
 // check if user has purchased a tour
-router.get("/check-purchase/:id", [authMiddleware], checkPurchasedTourController);
+router.get("/:id/check-purchase", [authMiddleware], checkPurchasedTourController);
 
 
 
