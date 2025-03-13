@@ -2,12 +2,10 @@ import { RequestHandler, Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../prisma";
 import mpClient from "../mercadopago";
-import { createPreference, createPreferences } from "../services/preference.services";
+import { createPreferences } from "../services/preference.services";
 import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
 import { ResponseData } from '../types/ResponseData';
-import { generateAccessToken } from "../utils/generateTokenTour";
-import UserWithoutPassword from "../types/auth/UserWithoutPassword";
-import { invalidBodyResponse, notFoundResponse } from "../utils/controller.utils";
+import { invalidBodyResponse, notFoundResponse } from "../utils/controllers/controller.utils";
 
 const PostBodyValidation = z.object({
   order_id: z.string().uuid(),

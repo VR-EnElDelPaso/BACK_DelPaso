@@ -59,18 +59,19 @@ model User {
   account_number Int?   @unique
   email          String @unique
 
-  name           String
-  display_name   String
-  image          String?
-  password       String?
-  role           Role      @default(VISITOR)
+  name         String
+  display_name String
+  image        String?
+  password     String?
+  role         Role    @default(VISITOR)
 
-  is_verified    Boolean? // Email verificado
-  verificationToken           String?       // Token de verificacion
-  verificationTokenExpiresAt  DateTime?     // Caducidad de token de verificacion
+  is_verified                Boolean? // Email verificado
+  verificationToken          String? // Token de verificación
+  verificationTokenExpiresAt DateTime? // Caducidad de token de verificación
 
-  reviews Review[]
-  orders  Order[]
+  reviews         Review[]
+  orders          Order[]
+  TourAccessToken TourAccess[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -89,10 +90,11 @@ model Order {
   preference Preference?
   payment    Payment?
 
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  cancelled_at DateTime?
-  completed_at DateTime?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  cancelled_at    DateTime?
+  completed_at    DateTime?
+  TourAccessToken TourAccess[]
 
   @@index([user_id])
   @@index([status])
@@ -105,7 +107,7 @@ model Preference {
 
   order_id String @unique
   order    Order  @relation(fields: [order_id], references: [id])
-  items Json
+  items    Json
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -142,17 +144,36 @@ model Tour {
   url         String
   image_url   String
 
-  museum_id String   @default("")
-  museum    Museum   @relation(fields: [museum_id], references: [id], onDelete: Cascade)
-  reviews   Review[]
-  orders    Order[]
+  museum_id String @default("")
+  museum    Museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
 
-  tags      TourTag[]
+  reviews         Review[]
+  orders          Order[]
+  tags            TourTag[]
+  TourAccessToken TourAccess[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@index([museum_id])
+}
+
+model TourAccess {
+  id String @id @default(uuid())
+
+  tour_id  String
+  tour     Tour   @relation(fields: [tour_id], references: [id], onDelete: Cascade)
+  user_id  String
+  user     User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  order_id String
+  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  expires_at DateTime
+
+  @@index([tour_id])
+	@@map("TourAccessToken")
 }
 
 model Museum {
@@ -191,8 +212,8 @@ model Review {
 }
 
 model OpenHour {
-  id         String   @id @default(uuid())
-  is_open    Boolean  @default(false)
+  id         String  @id @default(uuid())
+  is_open    Boolean @default(false)
   day        Day
   open_time  String
   close_time String
@@ -207,8 +228,8 @@ model OpenHour {
 }
 
 model Tag {
-  id   String @id @default(uuid())
-  name String @unique
+  id    String    @id @default(uuid())
+  name  String    @unique
   tours TourTag[]
 }
 
@@ -223,14 +244,14 @@ model TourTag {
 }
 
 model Page {
-  id          String      @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String
-  created_at  DateTime    @default(now())
-  updated_at  DateTime    @updatedAt
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   // Relaciones
-  carousels   Carrousel[]
+  carousels Carrousel[]
 }
 
 model Carrousel {
@@ -278,10 +299,9 @@ model Copy {
   parent_id  String?
   type       CopyType
   content    String
-  weight     String   // Para orden/prioridad
+  weight     String // Para orden/prioridad
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
 
   @@index([entity_id])
   @@index([parent_id])

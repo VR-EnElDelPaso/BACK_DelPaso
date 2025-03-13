@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkPurchasedTourController, createTourController, deleteTourController, editTourController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
+import { checkPurchasedTourController, createTourController, deleteTourController, editTourController, generateTourAccessTokenController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
 import { authMiddleware, verifyRolesMiddleware } from "../middlewares/auth.middlewares";
 
 const router = Router();
@@ -33,6 +33,12 @@ router.post("/suggestion", getTourSuggestionsController);
 
 // check if user has purchased a tour
 router.get("/:id/check-purchase", [authMiddleware], checkPurchasedTourController);
+
+// generate access token for a tour
+router.post("/:id/generate-access-token", [authMiddleware], generateTourAccessTokenController);
+
+// getTourUrl
+// router.get("/:id/url", [authMiddleware], getTourUrlController);
 
 
 
