@@ -203,27 +203,27 @@ async function main() {
     }
   });
 
-  // Crear slides para el carrusel
+  // Crear slides para el carrusel con URLs reales de Cloudinary
   const slides = await Promise.all([
     prisma.slide.create({
       data: {
         carrousel_id: mainCarousel.id,
         index: 0,
-        image_url: 'https://placehold.co/800x400/orange/white?text=Exhibición+Especial'
+        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/s72bz9z8k2tiv3foqiky.png'
       }
     }),
     prisma.slide.create({
       data: {
         carrousel_id: mainCarousel.id,
         index: 1,
-        image_url: 'https://placehold.co/800x400/blue/white?text=Tours+Virtuales'
+        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/kwy0uzbptfmkz7yr4mvh.png'
       }
     }),
     prisma.slide.create({
       data: {
         carrousel_id: mainCarousel.id,
         index: 2,
-        image_url: 'https://placehold.co/800x400/green/white?text=Eventos+Especiales'
+        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855375/muvi/teyab9iidjpzjsarmkbt.png'
       }
     })
   ]);
@@ -239,7 +239,7 @@ async function main() {
       data: {
         entity_id: slides[0].id,
         type: 'HEADER',
-        content: 'Nueva Exhibición: Dinosaurios',
+        content: 'Conoce MUVI',
         weight: '1'
       }
     })
@@ -250,7 +250,7 @@ async function main() {
       data: {
         entity_id: slides[0].id,
         type: 'PARAGRAPH',
-        content: 'Descubre los fósiles más impresionantes de la era mesozoica',
+        content: 'MUVi está listo para ofrecerte las mejores experiencias en Recorridos Virtuales',
         weight: '2'
       }
     })
@@ -262,7 +262,7 @@ async function main() {
       data: {
         entity_id: slides[1].id,
         type: 'HEADER',
-        content: 'Tours Virtuales 360°',
+        content: 'Conoce MUVI',
         weight: '1'
       }
     })
@@ -273,7 +273,7 @@ async function main() {
       data: {
         entity_id: slides[1].id,
         type: 'PARAGRAPH',
-        content: 'Explora el museo desde la comodidad de tu hogar',
+        content: 'Hacemos del arte una experiencia cercana para ti.',
         weight: '2'
       }
     })
@@ -285,7 +285,7 @@ async function main() {
       data: {
         entity_id: slides[2].id,
         type: 'HEADER',
-        content: 'Noche en el Museo',
+        content: 'Conoce MUVI',
         weight: '1'
       }
     })
@@ -296,7 +296,7 @@ async function main() {
       data: {
         entity_id: slides[2].id,
         type: 'PARAGRAPH',
-        content: 'Visitas nocturnas especiales cada fin de semana',
+        content: 'Descubre nuestros recorridos y elige tu favorito.',
         weight: '2'
       }
     })
