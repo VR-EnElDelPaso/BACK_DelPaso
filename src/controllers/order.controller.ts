@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import { z } from "zod";
-import { invalidBodyResponse, notFoundResponse, operationErrorResponse, validateIdAndRespond } from "../utils/controllerUtils";
+import { invalidBodyResponse, notFoundResponse, operationErrorResponse, validateIdAndRespond } from "../utils/controllers/controller.utils";
 import prisma from "../prisma";
 import { ResponseData } from "../types/ResponseData";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";

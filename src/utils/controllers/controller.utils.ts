@@ -1,6 +1,7 @@
-import { Response } from "express";
 import { z } from "zod";
-import { ResponseData } from "../types/ResponseData";
+import { Request, Response } from "express";
+import { ResponseData } from "../../types/ResponseData";
+import UserWithoutPassword from "../../types/auth/UserWithoutPassword";
 
 export const validateIdAndRespond = (res: Response, id: string) => {
   const idValidation = z.string().uuid().safeParse(id);
@@ -40,6 +41,11 @@ export const operationErrorResponse = (res: Response) => {
     ok: false,
     message: "Operation error",
   } as ResponseData);
+}
+
+export const isAdminUser = (req: Request) => {
+  console.log(req?.user);
+  return (req?.user as UserWithoutPassword)?.role === "ADMIN";
 }
 
 export const handleControllerError = (error: unknown, res: Response) => {

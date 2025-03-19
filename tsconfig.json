@@ -8,5 +8,8 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"
   },
-  "include": ["src", "prisma"]
+  "include": ["src", "prisma"],
+  "paths": {
+    "@/*": ["src/*"]
+  }
 }

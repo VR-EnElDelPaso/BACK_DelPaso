@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { createOneOrderController, getOneOrderController, getOrdersByUserController, patchOrderController } from "../controllers/order.controller";
-import { AuthMiddleware } from "../middlewares";
+import { authMiddleware } from "../middlewares/auth.middlewares";
 
 const router = Router();
 
 // ----[ CRUD ]----
 router.get("/:order_id", getOneOrderController);
-router.post("/", AuthMiddleware, createOneOrderController);
+router.post("/", [authMiddleware], createOneOrderController);
 router.patch("/:order_id", patchOrderController);
 
 // ----[ Special ]----

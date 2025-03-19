@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 
-export const generateAccessToken = (userId: string, tourIds: string[]): string => {
+export const generateTourAccessToken = (userId: string, tourId: string, orderId: string) => {
   const secretKey = process.env.JWT_SECRET as string;
-  const payload = { userId, tourIds };
+  const payload = { userId, tourId, orderId };
 
-  return jwt.sign(payload, secretKey, { expiresIn: '24h' });
+  // 1 minute
+  return jwt.sign(payload, secretKey, { expiresIn: '3m' });
 };
