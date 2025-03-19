@@ -393,6 +393,23 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
 };
 
 
+/**
+ * Handles the request to get the tour URL for a user.
+ * 
+ * @param {Request} req - The request object containing user and tour ID.
+ * @param {Response<ResponseData>} res - The response object to send the result.
+ * 
+ * @returns {Promise<void>} - A promise that resolves to void.
+ * 
+ * @throws {Error} - If an error occurs during the process.
+ * 
+ * The function performs the following steps:
+ * 1. Validates the tour by checking if it exists in the database.
+ * 2. Validates if the user has purchased the tour and if the access token has not expired.
+ * 3. Checks if an access token already exists for the user and tour.
+ * 4. If an access token exists, returns the tour URL.
+ * 5. If no access token exists, generates a new access token and returns the tour URL.
+ */
 export const getTourUrl: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
   try {
     const user = req.user as UserWithoutPassword;

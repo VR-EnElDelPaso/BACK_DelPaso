@@ -34,8 +34,8 @@ router.post("/suggestion", getTourSuggestionsController);
 // check if user has purchased a tour
 router.get("/:id/check-purchase", [authMiddleware], checkPurchasedTourController);
 
-// generate access token for a tour
-router.post("/:id/url", [authMiddleware], getTourUrl);
+// getTourUrl
+router.get("/:id/url", [authMiddleware], getTourUrl);
 
 // getTourUrl
 // router.get("/:id/url", [authMiddleware], getTourUrlController);
