@@ -10,7 +10,7 @@ export const isPurchasedTour = async (tour: Tour, user: UserWithoutPassword): Pr
       status: { in: ["COMPLETED", "PENDING"] },
     },
     include: {
-      TourAccessToken: {
+      TourAccess: {
         where: {
           tour_id: tour.id,
           expires_at: {
@@ -24,7 +24,7 @@ export const isPurchasedTour = async (tour: Tour, user: UserWithoutPassword): Pr
     },
   });
 
-  return (!foundOrder || foundOrder.TourAccessToken.length > 0)
+  return (!foundOrder || foundOrder.TourAccess.length > 0)
 }
 
 export const getCurrentOrder = async (tour: Tour, user: UserWithoutPassword) => {
@@ -41,8 +41,8 @@ export const getCurrentOrder = async (tour: Tour, user: UserWithoutPassword) => 
   return foundOrder;
 }
 
-export const hasOrderExpiredToken = async (orderId: string, tourId: string): Promise<boolean> => {
-  const foundToken = await prisma.tourAccess.findFirst({
+export const hasOrderExpiredAccess = async (orderId: string, tourId: string): Promise<boolean> => {
+  const foundAccess = await prisma.tourAccess.findFirst({
     where: {
       order_id: orderId,
       tour_id: tourId,
@@ -51,5 +51,5 @@ export const hasOrderExpiredToken = async (orderId: string, tourId: string): Pro
       }
     }
   });
-  return !!foundToken;
+  return !!foundAccess;
 }

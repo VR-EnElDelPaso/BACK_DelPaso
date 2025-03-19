@@ -6,13 +6,14 @@ import {
   invalidBodyResponse,
   isAdminUser,
   notFoundResponse,
+  operationErrorResponse,
   validateIdAndRespond,
 } from "../utils/controllers/controller.utils";
 import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
 import { TourWithoutUrlSelectQuery, TourWithUrlSelectQuery } from "../querys/tour.querys";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
 import { generateTourAccessToken } from "../utils/generateTokenTour";
-import { getCurrentOrder, hasOrderExpiredToken } from '../utils/controllers/tour.utils';
+import { getCurrentOrder, hasOrderExpiredAccess } from '../utils/controllers/tour.utils';
 import { Decimal } from "@prisma/client/runtime/library";
 
 
@@ -370,7 +371,7 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
 
   // Find a paid order associated with the tour and user
   const foundOrder = await getCurrentOrder(foundTour, user);
-  const foundExpiredToken = await hasOrderExpiredToken(foundOrder?.id ?? '', foundTour.id);
+  const foundExpiredToken = await hasOrderExpiredAccess(foundOrder?.id ?? '', foundTour.id);
   if (!foundOrder || foundExpiredToken) return res.status(403).json({
     ok: true,
     message: "Tour not purchased",
@@ -391,8 +392,8 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
   } as ResponseData);
 };
 
-// todo: rename to getTourUrl or something like that
-export const generateTourAccessTokenController: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
+
+export const getTourUrl: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
   try {
     const user = req.user as UserWithoutPassword;
 
@@ -405,24 +406,24 @@ export const generateTourAccessTokenController: RequestHandler = async (req: Req
 
     // validate tour purchase
     const foundOrder = await getCurrentOrder(foundTour, user);
-    const foundExpiredToken = await hasOrderExpiredToken(foundOrder?.id ?? '', foundTour.id);
+    const foundExpiredToken = await hasOrderExpiredAccess(foundOrder?.id ?? '', foundTour.id);
     if (!foundOrder || foundExpiredToken) return res.status(403).json({
       ok: false,
       message: "Tour not purchased",
     });
 
     // check if access token already exists
-    const foundToken = await prisma.tourAccess.findFirst({
+    const foundAccess = await prisma.tourAccess.findFirst({
       where: {
         tour_id: foundTour.id,
         user_id: user.id,
         order_id: foundOrder.id,
         expires_at: {
-          gt: new Date() // check if token is still valid
+          gt: new Date() // check if expires_at is greater than now
         }
       },
     });
-    if (foundToken) return res.status(200).json({
+    if (foundAccess) return res.status(200).json({
       ok: true,
       message: "Get tour-url successfully",
       data: {
@@ -430,15 +431,6 @@ export const generateTourAccessTokenController: RequestHandler = async (req: Req
       },
     });
 
-    // generate access token
-    await prisma.tourAccess.create({
-      data: {
-        tour_id: foundTour?.id,
-        user_id: user?.id,
-        order_id: foundOrder?.id,
-        expires_at: new Date(Date.now() + 5 * 1000),
-      },
-    });
     return res.status(201).json({
       ok: true,
       message: "Get tour-url successfully",
@@ -447,11 +439,8 @@ export const generateTourAccessTokenController: RequestHandler = async (req: Req
       },
     });
   } catch (error) {
-    console.error("Error generating tour access token:", error);
-    return res.status(500).json({
-      ok: false,
-      message: "Error generating access token",
-    });
+    console.error(error);
+    return operationErrorResponse(res);
   }
 }
 
