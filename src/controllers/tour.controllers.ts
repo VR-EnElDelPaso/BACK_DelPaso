@@ -431,6 +431,15 @@ export const getTourUrl: RequestHandler = async (req: Request, res: Response<Res
       },
     });
 
+    // generate tour access
+    await prisma.tourAccess.create({
+      data: {
+        tour_id: foundTour?.id,
+        user_id: user?.id,
+        order_id: foundOrder?.id,
+        expires_at: new Date(Date.now() + 5 * 1000),
+      },
+    });
     return res.status(201).json({
       ok: true,
       message: "Get tour-url successfully",
