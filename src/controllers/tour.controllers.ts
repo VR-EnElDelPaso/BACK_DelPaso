@@ -6,11 +6,15 @@ import {
   invalidBodyResponse,
   isAdminUser,
   notFoundResponse,
+  operationErrorResponse,
   validateIdAndRespond,
-} from "../utils/controller.utils";
+} from "../utils/controllers/controller.utils";
 import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
 import { TourWithoutUrlSelectQuery, TourWithUrlSelectQuery } from "../querys/tour.querys";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
+import { generateTourAccessToken } from "../utils/generateTokenTour";
+import { getCurrentOrder, hasOrderExpiredAccess } from '../utils/controllers/tour.utils';
+import { Decimal } from "@prisma/client/runtime/library";
 
 
 
@@ -361,19 +365,14 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
 
   // Validate if the tour exists
   const foundTour = await prisma.tour.findUnique({
-    where: { id: req.params.id },
+    where: { id: req?.params?.id },
   });
   if (!foundTour) return notFoundResponse(res, "Tour");
 
   // Find a paid order associated with the tour and user
-  const foundOrder = await prisma.order.findFirst({
-    where: {
-      user_id: user.id,
-      tours: { some: { id: req.params.id } },
-      status: { in: ["COMPLETED", "PENDING"] },
-    },
-  });
-  if (!foundOrder) return res.status(200).json({
+  const foundOrder = await getCurrentOrder(foundTour, user);
+  const foundExpiredToken = await hasOrderExpiredAccess(foundOrder?.id ?? '', foundTour.id);
+  if (!foundOrder || foundExpiredToken) return res.status(403).json({
     ok: true,
     message: "Tour not purchased",
     data: {
@@ -392,3 +391,82 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
     },
   } as ResponseData);
 };
+
+
+/**
+ * Handles the request to get the tour URL for a user.
+ * 
+ * @param {Request} req - The request object containing user and tour ID.
+ * @param {Response<ResponseData>} res - The response object to send the result.
+ * 
+ * @returns {Promise<void>} - A promise that resolves to void.
+ * 
+ * @throws {Error} - If an error occurs during the process.
+ * 
+ * The function performs the following steps:
+ * 1. Validates the tour by checking if it exists in the database.
+ * 2. Validates if the user has purchased the tour and if the access token has not expired.
+ * 3. Checks if an access token already exists for the user and tour.
+ * 4. If an access token exists, returns the tour URL.
+ * 5. If no access token exists, generates a new access token and returns the tour URL.
+ */
+export const getTourUrl: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
+  try {
+    const user = req.user as UserWithoutPassword;
+
+    // validate tour
+    const foundTour = await prisma.tour.findUnique({
+      where: { id: req?.params?.id },
+    });
+    if (!foundTour) return notFoundResponse(res, "Tour");
+
+
+    // validate tour purchase
+    const foundOrder = await getCurrentOrder(foundTour, user);
+    const foundExpiredToken = await hasOrderExpiredAccess(foundOrder?.id ?? '', foundTour.id);
+    if (!foundOrder || foundExpiredToken) return res.status(403).json({
+      ok: false,
+      message: "Tour not purchased",
+    });
+
+    // check if access token already exists
+    const foundAccess = await prisma.tourAccess.findFirst({
+      where: {
+        tour_id: foundTour.id,
+        user_id: user.id,
+        order_id: foundOrder.id,
+        expires_at: {
+          gt: new Date() // check if expires_at is greater than now
+        }
+      },
+    });
+    if (foundAccess) return res.status(200).json({
+      ok: true,
+      message: "Get tour-url successfully",
+      data: {
+        tour_url: foundTour.url
+      },
+    });
+
+    // generate tour access
+    await prisma.tourAccess.create({
+      data: {
+        tour_id: foundTour?.id,
+        user_id: user?.id,
+        order_id: foundOrder?.id,
+        expires_at: new Date(Date.now() + 5 * 1000),
+      },
+    });
+    return res.status(201).json({
+      ok: true,
+      message: "Get tour-url successfully",
+      data: {
+        tour_url: foundTour.url
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return operationErrorResponse(res);
+  }
+}
+

@@ -2,7 +2,7 @@ import { z } from "zod";
 import prisma from "../prisma";
 import { ResponseData } from "../types/ResponseData";
 import { Request, Response } from "express";
-import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controller.utils";
+import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllers/controller.utils";
 import { CreateMuseumSchema, EditMuseumSchema } from "../validations/museum.validations";
 import { createOpenHoursForMuseum, dayReverseMap } from "../utils/museums.utils";
 

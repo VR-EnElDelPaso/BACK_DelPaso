@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { ResponseData } from "../types/ResponseData";
 import { Request, Response } from "express";
-import UserWithoutPassword from "../types/auth/UserWithoutPassword";
+import { ResponseData } from "../../types/ResponseData";
+import UserWithoutPassword from "../../types/auth/UserWithoutPassword";
 
 export const validateIdAndRespond = (res: Response, id: string) => {
   const idValidation = z.string().uuid().safeParse(id);

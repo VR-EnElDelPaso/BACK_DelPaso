@@ -3,7 +3,7 @@ import prisma from "../prisma";
 import { z } from "zod";
 import { CarouselRequestSchema } from "../types/carousel/ZodSchemas";
 import { ResponseData } from "../types/ResponseData";
-import { handleControllerError, notFoundResponse } from "../utils/controller.utils";
+import { handleControllerError, notFoundResponse } from "../utils/controllers/controller.utils";
 
 export const getCarousels = async (req: Request, res: Response) => {
   try {
