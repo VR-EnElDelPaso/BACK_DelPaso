@@ -1,4 +1,4 @@
-// third party
+// ----[third party]----
 import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import cors from "cors";
@@ -19,12 +19,12 @@ import orderRoutes from "./routes/order.routes";
 import tagRoutes from './routes/tag.routes';
 import carouselRoutes from './routes/carousel.routes';
 
-// middlewares
+// ----[middlewares]----
 import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
 
 const app = express();
 
-// app configuration
+// ----[app configuration]----
 app.use( // session configuration
   session({
     secret: process.env.SESSIONS_SECRET!,
@@ -54,7 +54,7 @@ app.use(express.json({ limit: "10mb" })); // limit 10MB for image uploads
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 
-// routes
+// ----[routes]----
 app.use("/api/auth", authRoutes);
 app.use("/Metadata", metadataRoutes);
 app.use("/api/tours", [setUserMiddleware], tourRoutes);
