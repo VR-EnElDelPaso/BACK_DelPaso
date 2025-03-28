@@ -12,22 +12,37 @@ import { createOpenHoursForMuseum, dayReverseMap } from "../utils/museums.utils"
 export const getAllMuseumsController = async (req: Request, res: Response) => {
   const museums = await prisma.museum.findMany({
     orderBy: { created_at: "desc" },
-    include: { open_hours: true } // Incluir la relación con OpenHour
+    include: { open_hours: true }
   });
 
-  // Transformar la respuesta para devolver los días en español
-  const formattedMuseums = museums.map(museum => ({
-    ...museum,
-    hours: museum.open_hours.map(hour => ({
-      day: dayReverseMap[hour.day], // Convertir enum a texto en español
-      isOpen: hour.is_open
-    }))
+  const formatted = museums.map(museum => ({
+    name: museum.name,
+    description: museum.description,
+    address_name: museum.address_name,
+    main_tour_id: museum.main_tour_id,
+    main_photo: museum.main_photo,
+    hours: museum.open_hours.map(hour => {
+      const base = {
+        day: dayReverseMap[hour.day],
+        isOpen: hour.is_open
+      };
+
+      if (hour.is_open) {
+        return {
+          ...base,
+          openTime: hour.open_time,
+          closeTime: hour.close_time
+        };
+      }
+
+      return base;
+    })
   }));
 
   return res.status(200).json({
     ok: true,
-    message: "Museums fetched successfully",
-    data: formattedMuseums,
+    message: "Museos con horarios formateados",
+    data: formatted
   } as ResponseData);
 };
 
@@ -60,18 +75,32 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
   }
 
   const formattedMuseum = {
-    ...museum,
-    hours: museum.open_hours.map(hour => ({
-      day: dayReverseMap[hour.day],
-      isOpen: hour.is_open
-    }))
+    name: museum.name,
+    description: museum.description,
+    address_name: museum.address_name,
+    main_tour_id: museum.main_tour_id,
+    main_photo: museum.main_photo,
+    hours: museum.open_hours.map(hour => {
+      const base = {
+        day: dayReverseMap[hour.day],
+        isOpen: hour.is_open
+      };
+      if (hour.is_open) {
+        return {
+          ...base,
+          openTime: hour.open_time,
+          closeTime: hour.close_time
+        };
+      }
+      return base;
+    })
   };
-
+  
   return res.status(200).json({
     ok: true,
     message: "Museum fetched successfully",
     data: formattedMuseum,
-  } as ResponseData);
+  } as ResponseData);  
 };
 
 
@@ -83,7 +112,6 @@ export const createMuseumController = async (req: Request, res: Response) => {
   const { hours, ...museumData } = bodyValidation.data;
 
   try {
-    // Crear el museo
     const museum = await prisma.museum.create({ data: museumData });
 
     if (hours && hours.length > 0) {
@@ -92,20 +120,36 @@ export const createMuseumController = async (req: Request, res: Response) => {
 
     const openHours = await prisma.openHour.findMany({
       where: { museum_id: museum.id },
-      select: { day: true, is_open: true }
+      select: { day: true, is_open: true, open_time: true, close_time: true }
     });
 
-    const formattedHours = openHours.map(hour => ({
-      day: dayReverseMap[hour.day],
-      isOpen: hour.is_open
-    }));
+    const formattedHours = openHours.map(hour => {
+      const base = {
+        day: dayReverseMap[hour.day],
+        isOpen: hour.is_open
+      };
+
+      if (hour.is_open) {
+        return {
+          ...base,
+          openTime: hour.open_time,
+          closeTime: hour.close_time
+        };
+      }
+
+      return base;
+    });
 
     return res.status(201).json({
       ok: true,
       message: "Museum created successfully",
       data: {
-        ...museum,
-        hours: formattedHours // Incluir los horarios en la respuesta
+        name: museum.name,
+        description: museum.description,
+        address_name: museum.address_name,
+        main_tour_id: museum.main_tour_id,
+        main_photo: museum.main_photo,
+        hours: formattedHours
       }
     } as ResponseData);
   } catch (error) {
