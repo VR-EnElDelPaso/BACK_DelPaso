@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Limpia la base de datos antes de insertar nuevos datos
+  await prisma.faq.deleteMany();
   await prisma.copy.deleteMany();
   await prisma.slide.deleteMany();
   await prisma.carrousel.deleteMany();
@@ -57,6 +58,40 @@ async function main() {
       },
     }),
   ]);
+
+  // Crear preguntas frecuentes (FAQs)
+const faqs = await Promise.all([
+  prisma.faq.create({
+    data: {
+      title: '¿Qué es MUVi?',
+      description: 'MUVi es una plataforma que ofrece recorridos virtuales por museos y sitios de interés cultural, permitiéndote explorar exhibiciones desde cualquier lugar.'
+    }
+  }),
+  prisma.faq.create({
+    data: {
+      title: '¿Cómo puedo comprar un tour virtual?',
+      description: 'Puedes comprar un tour virtual seleccionándolo en nuestra página, agregándolo al carrito y realizando el pago a través de Mercado Pago. Una vez completada la compra, tendrás acceso inmediato.'
+    }
+  }),
+  prisma.faq.create({
+    data: {
+      title: '¿Por cuánto tiempo tengo acceso a un tour después de comprarlo?',
+      description: 'El acceso a los tours varía según el tipo de recorrido. Por lo general, tendrás acceso durante 30 días después de la compra, pero esto se especifica en la descripción de cada tour.'
+    }
+  }),
+  prisma.faq.create({
+    data: {
+      title: '¿Qué hago si tengo problemas técnicos durante un tour?',
+      description: 'Si experimentas problemas técnicos, puedes contactar a nuestro soporte técnico a través del formulario de contacto o enviando un correo a soporte@muvi.com.'
+    }
+  }),
+  prisma.faq.create({
+    data: {
+      title: '¿Ofrecen descuentos para estudiantes?',
+      description: 'Sí, ofrecemos descuentos especiales para estudiantes. Para acceder a estos descuentos, debes registrarte con tu correo institucional y verificar tu estado como estudiante.'
+    }
+  })
+]);
 
   // Crear Tags
   const tags = await Promise.all([
