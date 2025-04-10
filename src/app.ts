@@ -18,6 +18,7 @@ import mpWebHookRoutes from "./routes/webhook.routes";
 import orderRoutes from "./routes/order.routes";
 import tagRoutes from './routes/tag.routes';
 import carouselRoutes from './routes/carousel.routes';
+import faqRoutes from "./routes/faq.routes";
 
 // ----[middlewares]----
 import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
@@ -67,6 +68,7 @@ app.use("/api/storage", storageRoutes);
 app.use("/api/orders", orderRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/carousels', carouselRoutes);
+app.use("/api/faqs", faqRoutes);
 
 app.get("/", [authMiddleware], (req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
