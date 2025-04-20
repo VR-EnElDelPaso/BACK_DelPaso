@@ -24,7 +24,7 @@ export const notFoundResponse = (res: Response, entity: string) => res.status(40
 export const invalidBodyResponse = (res: Response, errors: z.ZodError) => res.status(400).json({
   ok: false,
   message: "Invalid body",
-  errors: errors.formErrors.fieldErrors,
+  errors: errors.flatten(),
 } as unknown as ResponseData);
 
 export const validateEmptyBody = (body: any): boolean => {
@@ -50,11 +50,11 @@ export const isAdminUser = (req: Request) => {
 
 export const handleControllerError = (error: unknown, res: Response) => {
   console.error('Controller error:', error);
-  
+
   if (error instanceof z.ZodError) {
     return invalidBodyResponse(res, error);
   }
-  
+
   // Si el error tiene un mensaje específico
   if (error instanceof Error) {
     return res.status(500).json({
@@ -62,6 +62,6 @@ export const handleControllerError = (error: unknown, res: Response) => {
       message: `Operation error: ${error.message}`
     });
   }
-  
+
   return operationErrorResponse(res);
 };

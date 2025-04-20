@@ -181,6 +181,8 @@ model Museum {
   name         String
   description  String
   address_name String
+  latitude     Float  @default(0)
+  longitude    Float  @default(0)
   main_photo   String
 
   main_tour_id String?
@@ -214,8 +216,8 @@ model OpenHour {
   id         String  @id @default(uuid())
   is_open    Boolean @default(false)
   day        Day
-  open_time  String
-  close_time String
+  open_time  String? // formato 24 horas (ej: "09:00")
+  close_time String? // formato 24 horas (ej: "18:00")
 
   museum_id String
   museum    Museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
