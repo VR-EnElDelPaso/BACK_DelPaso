@@ -3,8 +3,9 @@ import prisma from "../prisma";
 import { ResponseData } from "../types/ResponseData";
 import { Request, Response } from "express";
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllers/controller.utils";
-import { CreateMuseumSchema, EditMuseumSchema } from "../validations/museum.validations";
-import { createOpenHoursForMuseum, dayReverseMap } from "../utils/museums.utils";
+import { CreateMuseumSchema, EditMuseumSchema, HoursSchema } from "../validations/museum.validations";
+import { dayReverseMap, museumSerializer } from "../utils/museums.utils";
+import { Day } from "@prisma/client";
 
 // ----[ CRUD ]----
 
@@ -12,22 +13,15 @@ import { createOpenHoursForMuseum, dayReverseMap } from "../utils/museums.utils"
 export const getAllMuseumsController = async (req: Request, res: Response) => {
   const museums = await prisma.museum.findMany({
     orderBy: { created_at: "desc" },
-    include: { open_hours: true } // Incluir la relación con OpenHour
+    include: { open_hours: true }
   });
 
-  // Transformar la respuesta para devolver los días en español
-  const formattedMuseums = museums.map(museum => ({
-    ...museum,
-    hours: museum.open_hours.map(hour => ({
-      day: dayReverseMap[hour.day], // Convertir enum a texto en español
-      isOpen: hour.is_open
-    }))
-  }));
+  const formatted = await Promise.all(museums.map(async museum => await museumSerializer(museum)));
 
   return res.status(200).json({
     ok: true,
-    message: "Museums fetched successfully",
-    data: formattedMuseums,
+    message: "Museos con horarios formateados",
+    data: formatted
   } as ResponseData);
 };
 
@@ -59,13 +53,7 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
     } as ResponseData);
   }
 
-  const formattedMuseum = {
-    ...museum,
-    hours: museum.open_hours.map(hour => ({
-      day: dayReverseMap[hour.day],
-      isOpen: hour.is_open
-    }))
-  };
+  const formattedMuseum = await museumSerializer(museum)
 
   return res.status(200).json({
     ok: true,
@@ -77,44 +65,56 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
 
 // Create museum
 export const createMuseumController = async (req: Request, res: Response) => {
-  const bodyValidation = CreateMuseumSchema.safeParse(req.body);
-  if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
+  const museumValidation = CreateMuseumSchema.safeParse(req.body);
+  if (!museumValidation.success) return invalidBodyResponse(res, museumValidation.error);
 
-  const { hours, ...museumData } = bodyValidation.data;
-
+  let createdMuseum = null;
   try {
-    // Crear el museo
-    const museum = await prisma.museum.create({ data: museumData });
-
-    if (hours && hours.length > 0) {
-      await createOpenHoursForMuseum(museum.id, hours);
-    }
-
-    const openHours = await prisma.openHour.findMany({
-      where: { museum_id: museum.id },
-      select: { day: true, is_open: true }
+    createdMuseum = await prisma.museum.create({
+      data: museumValidation.data
     });
-
-    const formattedHours = openHours.map(hour => ({
-      day: dayReverseMap[hour.day],
-      isOpen: hour.is_open
-    }));
-
-    return res.status(201).json({
-      ok: true,
-      message: "Museum created successfully",
-      data: {
-        ...museum,
-        hours: formattedHours // Incluir los horarios en la respuesta
-      }
-    } as ResponseData);
   } catch (error) {
     console.error("Error creating museum:", error);
     return res.status(500).json({
       ok: false,
-      message: "Error creating museum",
+      message: "Error creating museum"
     } as ResponseData);
   }
+
+  let createdOpenHours: z.infer<typeof HoursSchema>[] = [];
+
+  if (req.body.hours) {
+    const hoursValidation = HoursSchema.safeParse(req.body.hours);
+    if (!hoursValidation.success) return invalidBodyResponse(res, hoursValidation.error);
+    try {
+      await prisma.openHour.createMany({
+        data: hoursValidation.data.map(hour => ({
+          museum_id: createdMuseum.id,
+          day: hour.day as Day,
+          is_open: hour.isOpen,
+          open_time: hour.openTime,
+          close_time: hour.closeTime
+        }))
+      });
+      createdOpenHours = [hoursValidation.data]
+    } catch (error) {
+      await prisma.museum.delete({ where: { id: createdMuseum.id } });
+      console.error("Error creating open hours:", error);
+      return res.status(500).json({
+        ok: false,
+        message: "Error creating open hours"
+      } as ResponseData);
+    }
+  }
+
+  return res.status(200).json({
+    ok: true,
+    message: "Museum created successfully",
+    data: {
+      ...museumValidation.data,
+      hours: createdOpenHours
+    }
+  } as ResponseData);
 };
 
 // Edit museum
@@ -125,56 +125,68 @@ export const editMuseumController = async (req: Request, res: Response) => {
   const foundMuseum = await prisma.museum.findUnique({ where: { id } });
   if (!foundMuseum) return notFoundResponse(res, "Museum");
 
-  const bodyValidation = EditMuseumSchema.safeParse(req.body);
-  if (!bodyValidation.success) return invalidBodyResponse(res, bodyValidation.error);
+  const museumValidation = EditMuseumSchema.safeParse(req.body);
+  if (!museumValidation.success) return invalidBodyResponse(res, museumValidation.error);
 
-  if (validateEmptyBody(bodyValidation.data)) return emptyBodyResponse(res);
+  if (validateEmptyBody(museumValidation.data)) return emptyBodyResponse(res);
 
-  const { hours, ...updateFields } = bodyValidation.data; // Extraemos `hours`
-  
   // Filtrar solo los campos válidos que no sean `undefined`
-  const validFields = Object.keys(updateFields).reduce(
-    (acc, key) => {
-      const typedKey = key as keyof typeof updateFields;
-      if (updateFields[typedKey] !== undefined) {
-        acc[typedKey] = updateFields[typedKey] as string | undefined;
-      }
-      return acc;
-    },
-    {} as Partial<typeof updateFields>
+  const validFields = Object.fromEntries(
+    Object.entries(museumValidation.data).filter(([_, value]) => value !== undefined)
   );
 
-  const updatedMuseum = await prisma.museum.update({
-    where: { id },
-    data: validFields, // Ahora `validFields` está bien definido
-  });
-
-  // Si se envían horarios, eliminamos los existentes y los reemplazamos
-  if (hours && hours.length > 0) {
-    await prisma.openHour.deleteMany({ where: { museum_id: id } });
-    await createOpenHoursForMuseum(id, hours);
+  if (validFields?.main_tour_id) {
+    const foundTour = await prisma.tour.findUnique({ where: { id: String(validFields.main_tour_id) } });
+    if (!foundTour) return notFoundResponse(res, "Main tour");
   }
 
-  const updatedOpenHours = await prisma.openHour.findMany({
-    where: { museum_id: id },
-    select: { day: true, is_open: true }
-  });
 
-  const formattedHours = updatedOpenHours.map(hour => ({
-    day: dayReverseMap[hour.day],
-    isOpen: hour.is_open
-  }));
+  let updatedMuseum = null;
+  try {
+    updatedMuseum = await prisma.museum.update({
+      where: { id },
+      data: validFields,
+    });
+  } catch (error) {
+    console.error("Error updating museum:", error);
+    return res.status(500).json({
+      ok: false,
+      message: "Error updating museum",
+    } as ResponseData);
+  }
 
-  return res.status(200).json({
-    ok: true,
-    message: "Museum updated successfully",
-    data: {
-      ...updatedMuseum,
-      hours: formattedHours
+  if (req.body.hours) {
+    const hoursValidation = HoursSchema.safeParse(req.body.hours);
+    if (!hoursValidation.success) return invalidBodyResponse(res, hoursValidation.error);
+    try {
+      await prisma.openHour.deleteMany({ where: { museum_id: id } });
+      await prisma.openHour.createMany({
+        data: hoursValidation.data.map(hour => ({
+          museum_id: id,
+          day: hour.day as Day,
+          is_open: hour.isOpen,
+          open_time: hour.openTime,
+          close_time: hour.closeTime
+        }))
+      });
+    } catch (error) {
+      console.error("Error updating open hours:", error);
+      return res.status(500).json({
+        ok: false,
+        message: "Error updating open hours",
+      } as ResponseData);
     }
-  } as ResponseData);
-};
 
+    return res.status(200).json({
+      ok: true,
+      message: "Museum updated successfully",
+      data: {
+        ...updatedMuseum,
+        hours: hoursValidation.data
+      }
+    } as ResponseData);
+  }
+};
 
 // Delete museum
 export const deleteMuseumController = async (req: Request, res: Response) => {
