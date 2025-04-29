@@ -1,5 +1,5 @@
 import prisma from "../prisma";
-import { Day } from "@prisma/client";
+import { Day, Museum, OpenHour } from "@prisma/client";
 
 /**
  * Mapeo de días en español a su equivalente en el enum Day de Prisma.
@@ -51,3 +51,41 @@ export const createOpenHoursForMuseum = async (museumId: string, hours: { day: s
 
   await prisma.openHour.createMany({ data: openHoursData });
 };
+
+
+export const museumSerializer = async (museumRecord: Museum, includeOpenHours: boolean = true) => {
+  const base = {
+    id: museumRecord.id,
+    name: museumRecord.name,
+    description: museumRecord.description,
+    address_name: museumRecord.address_name,
+    latitude: museumRecord.latitude,
+    longitude: museumRecord.longitude,
+    main_photo: museumRecord.main_photo,
+    main_tour_id: museumRecord.main_tour_id,
+    created_at: museumRecord.created_at,
+    updated_at: museumRecord.updated_at,
+  };
+
+  if (includeOpenHours) {
+    const museumOpenHours = await prisma.openHour.findMany({
+      where: { museum_id: museumRecord.id },
+      orderBy: { day: "asc" }
+    })
+
+    const serializedOpenHours = museumOpenHours.map(openHour => {
+      return {
+        day: openHour.day,
+        isOpen: openHour.is_open,
+        openTime: openHour.open_time,
+        closeTime: openHour.close_time
+      }
+    })
+    return {
+      ...base,
+      "hours": serializedOpenHours
+    };
+  }
+
+  return base;
+}

@@ -4,7 +4,7 @@ import { ResponseData } from "../types/ResponseData";
 import { Request, Response } from "express";
 import { emptyBodyResponse, invalidBodyResponse, notFoundResponse, validateEmptyBody, validateIdAndRespond } from "../utils/controllers/controller.utils";
 import { CreateMuseumSchema, EditMuseumSchema, HoursSchema } from "../validations/museum.validations";
-import { dayReverseMap } from "../utils/museums.utils";
+import { dayReverseMap, museumSerializer } from "../utils/museums.utils";
 import { Day } from "@prisma/client";
 
 // ----[ CRUD ]----
@@ -16,29 +16,7 @@ export const getAllMuseumsController = async (req: Request, res: Response) => {
     include: { open_hours: true }
   });
 
-  const formatted = museums.map(museum => ({
-    name: museum.name,
-    description: museum.description,
-    address_name: museum.address_name,
-    main_tour_id: museum.main_tour_id,
-    main_photo: museum.main_photo,
-    hours: museum.open_hours.map(hour => {
-      const base = {
-        day: dayReverseMap[hour.day],
-        isOpen: hour.is_open
-      };
-
-      if (hour.is_open) {
-        return {
-          ...base,
-          openTime: hour.open_time,
-          closeTime: hour.close_time
-        };
-      }
-
-      return base;
-    })
-  }));
+  const formatted = await Promise.all(museums.map(async museum => await museumSerializer(museum)));
 
   return res.status(200).json({
     ok: true,
@@ -75,27 +53,7 @@ export const getMuseumByIdController = async (req: Request, res: Response) => {
     } as ResponseData);
   }
 
-  const formattedMuseum = {
-    name: museum.name,
-    description: museum.description,
-    address_name: museum.address_name,
-    main_tour_id: museum.main_tour_id,
-    main_photo: museum.main_photo,
-    hours: museum.open_hours.map(hour => {
-      const base = {
-        day: hour.day as Day,
-        isOpen: hour.is_open
-      };
-      if (hour.is_open) {
-        return {
-          ...base,
-          openTime: hour.open_time,
-          closeTime: hour.close_time
-        };
-      }
-      return base;
-    })
-  };
+  const formattedMuseum = await museumSerializer(museum)
 
   return res.status(200).json({
     ok: true,
