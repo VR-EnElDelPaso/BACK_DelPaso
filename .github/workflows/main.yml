@@ -3,7 +3,7 @@ name: Deploy using SSH password
 on:
   push:
     branches:
-      - dev  # Or your deploy branch
+      - main  # Or your deploy branch
 
 jobs:
   deploy:
@@ -19,4 +19,4 @@ jobs:
           port: 22
           script: |
             cd /home/admin-elpaso/BACK_DelPaso
-            git pull origin dev
+            git pull origin main
