@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient, Day } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +13,7 @@ async function main() {
   await prisma.tourTag.deleteMany();
   await prisma.tour.deleteMany();
   await prisma.tag.deleteMany();
+  await prisma.openHour.deleteMany(); // Limpiar horas de apertura
   await prisma.museum.deleteMany();
   await prisma.user.deleteMany(); // Añadido para limpiar usuarios existentes
 
@@ -21,77 +22,83 @@ async function main() {
     prisma.user.create({
       data: {
         account_number: 20183890,
-        name: 'Miguel Angel',
-        display_name: 'Miguel',
-        email: 'miguel@example.com',
-        role: 'STUDENT',
-        password: bcrypt.hashSync('password'),
+        name: "Miguel Angel",
+        display_name: "Miguel",
+        email: "miguel@example.com",
+        role: "STUDENT",
+        password: bcrypt.hashSync("password"),
       },
     }),
     prisma.user.create({
       data: {
-        name: 'Admin',
-        display_name: 'Admin',
-        email: 'admin@admin.com',
-        role: 'ADMIN',
-        password: bcrypt.hashSync('tamaldepollo'),
+        name: "Admin",
+        display_name: "Admin",
+        email: "admin@admin.com",
+        role: "ADMIN",
+        password: bcrypt.hashSync("tamaldepollo"),
       },
     }),
     prisma.user.create({
       data: {
         account_number: 30001234,
-        name: 'Carlos Rodríguez',
-        display_name: 'Carlos',
-        email: 'carlos@example.com',
-        role: 'WORKER',
-        password: bcrypt.hashSync('password'), // Añadido password por seguridad
+        name: "Carlos Rodríguez",
+        display_name: "Carlos",
+        email: "carlos@example.com",
+        role: "WORKER",
+        password: bcrypt.hashSync("password"), // Añadido password por seguridad
       },
     }),
     prisma.user.create({
       data: {
         account_number: 30005678,
-        name: 'Laura Martínez',
-        display_name: 'Laura',
-        email: 'laura@example.com',
-        role: 'VISITOR',
-        password: bcrypt.hashSync('password'), // Añadido password por seguridad
+        name: "Laura Martínez",
+        display_name: "Laura",
+        email: "laura@example.com",
+        role: "VISITOR",
+        password: bcrypt.hashSync("password"), // Añadido password por seguridad
       },
     }),
   ]);
 
   // Crear preguntas frecuentes (FAQs)
-const faqs = await Promise.all([
-  prisma.faq.create({
-    data: {
-      title: '¿Qué es MUVi?',
-      description: 'MUVi es una plataforma que ofrece recorridos virtuales por museos y sitios de interés cultural, permitiéndote explorar exhibiciones desde cualquier lugar.'
-    }
-  }),
-  prisma.faq.create({
-    data: {
-      title: '¿Cómo puedo comprar un tour virtual?',
-      description: 'Puedes comprar un tour virtual seleccionándolo en nuestra página, agregándolo al carrito y realizando el pago a través de Mercado Pago. Una vez completada la compra, tendrás acceso inmediato.'
-    }
-  }),
-  prisma.faq.create({
-    data: {
-      title: '¿Por cuánto tiempo tengo acceso a un tour después de comprarlo?',
-      description: 'El acceso a los tours varía según el tipo de recorrido. Por lo general, tendrás acceso durante 30 días después de la compra, pero esto se especifica en la descripción de cada tour.'
-    }
-  }),
-  prisma.faq.create({
-    data: {
-      title: '¿Qué hago si tengo problemas técnicos durante un tour?',
-      description: 'Si experimentas problemas técnicos, puedes contactar a nuestro soporte técnico a través del formulario de contacto o enviando un correo a soporte@muvi.com.'
-    }
-  }),
-  prisma.faq.create({
-    data: {
-      title: '¿Ofrecen descuentos para estudiantes?',
-      description: 'Sí, ofrecemos descuentos especiales para estudiantes. Para acceder a estos descuentos, debes registrarte con tu correo institucional y verificar tu estado como estudiante.'
-    }
-  })
-]);
+  const faqs = await Promise.all([
+    prisma.faq.create({
+      data: {
+        title: "¿Qué es MUVi?",
+        description:
+          "MUVi es una plataforma que ofrece recorridos virtuales por museos y sitios de interés cultural, permitiéndote explorar exhibiciones desde cualquier lugar.",
+      },
+    }),
+    prisma.faq.create({
+      data: {
+        title: "¿Cómo puedo comprar un tour virtual?",
+        description:
+          "Puedes comprar un tour virtual seleccionándolo en nuestra página, agregándolo al carrito y realizando el pago a través de Mercado Pago. Una vez completada la compra, tendrás acceso inmediato.",
+      },
+    }),
+    prisma.faq.create({
+      data: {
+        title:
+          "¿Por cuánto tiempo tengo acceso a un tour después de comprarlo?",
+        description:
+          "El acceso a los tours varía según el tipo de recorrido. Por lo general, tendrás acceso durante 30 días después de la compra, pero esto se especifica en la descripción de cada tour.",
+      },
+    }),
+    prisma.faq.create({
+      data: {
+        title: "¿Qué hago si tengo problemas técnicos durante un tour?",
+        description:
+          "Si experimentas problemas técnicos, puedes contactar a nuestro soporte técnico a través del formulario de contacto o enviando un correo a soporte@muvi.com.",
+      },
+    }),
+    prisma.faq.create({
+      data: {
+        title: "¿Ofrecen descuentos para estudiantes?",
+        description:
+          "Sí, ofrecemos descuentos especiales para estudiantes. Para acceder a estos descuentos, debes registrarte con tu correo institucional y verificar tu estado como estudiante.",
+      },
+    }),
+  ]);
 
   // Crear Tags
   const tags = await Promise.all([
@@ -101,22 +108,125 @@ const faqs = await Promise.all([
     prisma.tag.create({ data: { name: "otros países" } }),
   ]);
 
-  // Crear Museos
+  // Crear Museos con horas de apertura
   const museums = await Promise.all([
+    // Museo Fernando Del Paso
     prisma.museum.create({
       data: {
-        name: 'Museo de Historia Natural',
-        description: 'Museo con exposiciones de fósiles y animales',
-        address_name: 'Calle 1, Ciudad',
-        main_photo: 'https://placehold.co/400'
+        name: "Museo Fernando Del Paso",
+        description:
+          "El Museo Fernando del Paso es un espacio dedicado a la obra y legado del destacado escritor, pintor y diplomático mexicano. Alberga una colección permanente de manuscritos, pinturas y objetos personales del autor, ofreciendo a los visitantes una inmersión en su universo creativo.",
+        address_name:
+          "Av. Chapultepec Sur 198, Americana, 44160 Guadalajara, Jalisco",
+        main_photo:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
+        latitude: 20.674128,
+        longitude: -103.371306,
+        open_hours: {
+          create: [
+            {
+              day: Day.MONDAY,
+              is_open: false,
+              open_time: null,
+              close_time: null,
+            },
+            {
+              day: Day.TUESDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "18:00",
+            },
+            {
+              day: Day.WEDNESDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "18:00",
+            },
+            {
+              day: Day.THURSDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "18:00",
+            },
+            {
+              day: Day.FRIDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "18:00",
+            },
+            {
+              day: Day.SATURDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "16:00",
+            },
+            {
+              day: Day.SUNDAY,
+              is_open: true,
+              open_time: "10:00",
+              close_time: "16:00",
+            },
+          ],
+        },
       },
     }),
+    // Museo Regional de Historia de Colima
     prisma.museum.create({
       data: {
-        name: 'Museo de Arte Moderno',
-        description: 'Museo con exposiciones de pinturas y esculturas',
-        address_name: 'Calle 2, Ciudad',
-        main_photo: 'https://placehold.co/400'
+        name: "Museo Regional de Historia de Colima",
+        description:
+          "El Museo Regional de Historia de Colima exhibe la rica historia y patrimonio cultural del estado. Sus salas muestran artefactos arqueológicos, documentos históricos y obras de arte que narran el desarrollo de la región desde la época prehispánica hasta la actualidad.",
+        address_name: "Calle Vicente Guerrero 12, Centro, 28000 Colima, Colima",
+        main_photo:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746496010/muvi/epymgvknpsoe5sclj4rq.webp",
+        latitude: 19.243015,
+        longitude: -103.726179,
+        open_hours: {
+          create: [
+            {
+              day: Day.MONDAY,
+              is_open: false,
+              open_time: null,
+              close_time: null,
+            },
+            {
+              day: Day.TUESDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "17:00",
+            },
+            {
+              day: Day.WEDNESDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "17:00",
+            },
+            {
+              day: Day.THURSDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "17:00",
+            },
+            {
+              day: Day.FRIDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "17:00",
+            },
+            {
+              day: Day.SATURDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "15:00",
+            },
+            {
+              day: Day.SUNDAY,
+              is_open: true,
+              open_time: "09:00",
+              close_time: "15:00",
+            },
+          ],
+        },
       },
     }),
   ]);
@@ -128,67 +238,69 @@ const faqs = await Promise.all([
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
-        name: 'Tour Universitario',
-        description: 'Recorrido por las principales universidades de la ciudad',
+        name: "Tour Universitario",
+        description: "Recorrido por las principales universidades de la ciudad",
         price: 25.99,
         stars: 4.5,
         url: tourUrl,
-        image_url: 'https://placehold.co/400',
+        image_url: "https://placehold.co/400",
         museum_id: museums[0].id,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
-            { tag: { connect: { id: tags[1].id } } }  // Local
-          ]
-        }
+            { tag: { connect: { id: tags[1].id } } }, // Local
+          ],
+        },
       },
     }),
     prisma.tour.create({
       data: {
-        name: 'Ruta Gastronómica',
-        description: 'Degustación de comida típica en restaurantes locales',
+        name: "Ruta Gastronómica",
+        description: "Degustación de comida típica en restaurantes locales",
         price: 39.99,
         stars: 4.8,
         url: tourUrl,
-        image_url: 'https://placehold.co/400',
+        image_url: "https://placehold.co/400",
         museum_id: museums[1].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[2].id } } }  // otros estados
-          ]
-        }
+            { tag: { connect: { id: tags[2].id } } }, // otros estados
+          ],
+        },
       },
     }),
     prisma.tour.create({
       data: {
-        name: 'Excursión a las montañas',
-        description: 'Un día de senderismo en los paisajes naturales más bellos',
-        price: 45.50,
+        name: "Excursión a las montañas",
+        description:
+          "Un día de senderismo en los paisajes naturales más bellos",
+        price: 45.5,
         stars: 5.0,
         url: tourUrl,
-        image_url: 'https://placehold.co/400',
+        image_url: "https://placehold.co/400",
         museum_id: museums[0].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[3].id } } }  // otros países
-          ]
-        }
+            { tag: { connect: { id: tags[3].id } } }, // otros países
+          ],
+        },
       },
     }),
     prisma.tour.create({
       data: {
-        name: 'Tour Nocturno',
-        description: 'Explora la ciudad de noche y conoce sus historias más oscuras',
-        price: 30.00,
+        name: "Tour Nocturno",
+        description:
+          "Explora la ciudad de noche y conoce sus historias más oscuras",
+        price: 30.0,
         stars: 4.4,
         url: tourUrl,
-        image_url: 'https://placehold.co/400',
+        image_url: "https://placehold.co/400",
         museum_id: museums[1].id,
         tags: {
           create: [
             { tag: { connect: { id: tags[1].id } } }, // Local
-          ]
-        }
+          ],
+        },
       },
     }),
   ]);
@@ -196,9 +308,9 @@ const faqs = await Promise.all([
   // Crear la landing page principal
   const landingPage = await prisma.page.create({
     data: {
-      name: 'Landing Page Principal',
-      description: 'Página de inicio del sitio web del museo'
-    }
+      name: "Landing Page Principal",
+      description: "Página de inicio del sitio web del museo",
+    },
   });
 
   // Crear algunos textos (copies) para la página de landing
@@ -206,36 +318,36 @@ const faqs = await Promise.all([
     prisma.copy.create({
       data: {
         entity_id: landingPage.id,
-        type: 'HEADER',
-        content: 'Bienvenidos al Museo',
-        weight: '1'
-      }
+        type: "HEADER",
+        content: "Bienvenidos a MUVi",
+        weight: "1",
+      },
     }),
     prisma.copy.create({
       data: {
         entity_id: landingPage.id,
-        type: 'PARAGRAPH',
-        content: 'Descubre nuestras exhibiciones únicas y tours virtuales',
-        weight: '2'
-      }
+        type: "PARAGRAPH",
+        content: "Descubre nuestras exhibiciones únicas y tours virtuales",
+        weight: "2",
+      },
     }),
     prisma.copy.create({
       data: {
         entity_id: landingPage.id,
-        type: 'BUTTON',
-        content: 'Explorar Tours',
-        weight: '3'
-      }
-    })
+        type: "BUTTON",
+        content: "Explorar Tours",
+        weight: "3",
+      },
+    }),
   ]);
 
   // Crear carrusel principal
   const mainCarousel = await prisma.carrousel.create({
     data: {
       page_id: landingPage.id,
-      name: 'Novedades',
-      description: 'Carrusel de novedades del museo'
-    }
+      name: "Novedades",
+      description: "Carrusel de novedades del museo",
+    },
   });
 
   // Crear slides para el carrusel con URLs reales de Cloudinary
@@ -244,103 +356,107 @@ const faqs = await Promise.all([
       data: {
         carrousel_id: mainCarousel.id,
         index: 0,
-        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/s72bz9z8k2tiv3foqiky.png'
-      }
+        image_url:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/s72bz9z8k2tiv3foqiky.png",
+      },
     }),
     prisma.slide.create({
       data: {
         carrousel_id: mainCarousel.id,
         index: 1,
-        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/kwy0uzbptfmkz7yr4mvh.png'
-      }
+        image_url:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855373/muvi/kwy0uzbptfmkz7yr4mvh.png",
+      },
     }),
     prisma.slide.create({
       data: {
         carrousel_id: mainCarousel.id,
         index: 2,
-        image_url: 'https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855375/muvi/teyab9iidjpzjsarmkbt.png'
-      }
-    })
+        image_url:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1741855375/muvi/teyab9iidjpzjsarmkbt.png",
+      },
+    }),
   ]);
 
-  console.log('Seeding base data completed');
-  
+  console.log("Seeding base data completed");
+
   // Después de crear los slides, ahora creamos los títulos y descripciones como copies
   const slideCopies = [];
-  
+
   // Títulos y descripciones para el primer slide
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[0].id,
-        type: 'HEADER',
-        content: 'Conoce MUVI',
-        weight: '1'
-      }
+        type: "HEADER",
+        content: "Conoce MUVI",
+        weight: "1",
+      },
     })
   );
-  
+
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[0].id,
-        type: 'PARAGRAPH',
-        content: 'MUVi está listo para ofrecerte las mejores experiencias en Recorridos Virtuales',
-        weight: '2'
-      }
+        type: "PARAGRAPH",
+        content:
+          "MUVi está listo para ofrecerte las mejores experiencias en Recorridos Virtuales",
+        weight: "2",
+      },
     })
   );
-  
+
   // Títulos y descripciones para el segundo slide
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[1].id,
-        type: 'HEADER',
-        content: 'Conoce MUVI',
-        weight: '1'
-      }
+        type: "HEADER",
+        content: "Conoce MUVI",
+        weight: "1",
+      },
     })
   );
-  
+
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[1].id,
-        type: 'PARAGRAPH',
-        content: 'Hacemos del arte una experiencia cercana para ti.',
-        weight: '2'
-      }
+        type: "PARAGRAPH",
+        content: "Hacemos del arte una experiencia cercana para ti.",
+        weight: "2",
+      },
     })
   );
-  
+
   // Títulos y descripciones para el tercer slide
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[2].id,
-        type: 'HEADER',
-        content: 'Conoce MUVI',
-        weight: '1'
-      }
+        type: "HEADER",
+        content: "Conoce MUVI",
+        weight: "1",
+      },
     })
   );
-  
+
   slideCopies.push(
     prisma.copy.create({
       data: {
         entity_id: slides[2].id,
-        type: 'PARAGRAPH',
-        content: 'Descubre nuestros recorridos y elige tu favorito.',
-        weight: '2'
-      }
+        type: "PARAGRAPH",
+        content: "Descubre nuestros recorridos y elige tu favorito.",
+        weight: "2",
+      },
     })
   );
-  
+
   // Ejecutar todas las operaciones de copia de slides
   await Promise.all(slideCopies);
 
-  console.log('Seeding executed successfully');
+  console.log("Seeding executed successfully");
 }
 
 main()
