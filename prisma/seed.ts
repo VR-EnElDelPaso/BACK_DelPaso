@@ -27,6 +27,7 @@ async function main() {
         email: "miguel@example.com",
         role: "STUDENT",
         password: bcrypt.hashSync("password"),
+        is_verified: true,
       },
     }),
     prisma.user.create({
@@ -36,6 +37,7 @@ async function main() {
         email: "admin@admin.com",
         role: "ADMIN",
         password: bcrypt.hashSync("tamaldepollo"),
+        is_verified: true,
       },
     }),
     prisma.user.create({
@@ -46,6 +48,7 @@ async function main() {
         email: "carlos@example.com",
         role: "WORKER",
         password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        is_verified: true,
       },
     }),
     prisma.user.create({
@@ -56,6 +59,7 @@ async function main() {
         email: "laura@example.com",
         role: "VISITOR",
         password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        is_verified: true,
       },
     }),
   ]);
