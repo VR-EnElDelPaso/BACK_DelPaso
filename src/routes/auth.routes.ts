@@ -14,7 +14,6 @@ const { clientUrl } = config.app;
 
 
 // --- Login ---
-
 // local auth login
 router.post('/login/local', passportInstance.authenticate('local', { session: false }), (req: Request, res: Response) => {
   if (!req.user) {
@@ -54,10 +53,7 @@ router.get("/login/fail", (req: Request, res: Response) =>
 );
 
 
-
-
 // --- Logout ---
-
 // saml logout
 router.get("/logout", authMiddleware, (req: any, res: Response, next: NextFunction) => {
   samlStrategy.logout(req, (err, url) => {
@@ -111,10 +107,7 @@ router.post("/logout/callback", (req: Request, res: Response, next: NextFunction
 });
 
 
-
-
 // --- Auth test ---
-
 router.get('/protected', passportInstance.authenticate('jwt', { session: false }), (req: Request, res: Response) => {
   res.json({ message: 'This is a protected route', user: req.user });
 });

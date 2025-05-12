@@ -2,9 +2,11 @@ import { Router, Request, Response } from "express";
 import prisma from "../prisma";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "../services/email.services";
+import { validationStudent, validationVisitor, validationWorker } from "../utils/user.utils";
 
 const router = Router();
 
+// --- Create User ---
 router.post("/new", async (req: Request, res: Response) => {
   const { account_number, name, display_name, email, password, role } = req.body;
 
@@ -62,42 +64,5 @@ router.post("/new", async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: 'An unknown error occurred during user creation' });
   }
 });
-
-function validationWorker(account_number: number, email: string){
-  if(!account_number){
-    throw new Error("Account number is missing");
-  }
-
-  if (account_number.toString().length !== 4) {
-    throw new Error("Insert a valid 4-digit account number");
-  }
-
-  const correoUCol = /^[a-zA-Z0-9._%+-]+@ucol\.mx$/;
-  if (!correoUCol.test(email)) {
-    throw new Error("Insert a valid email address");
-  }
-}
-
-function validationStudent(account_number: number, email: string){
-  if(!account_number){
-    throw new Error("Account number is missing");
-  }
-
-  if (account_number.toString().length !== 8) {
-    throw new Error("Insert a valid 8-digit account number");
-  }
-
-  const correoUCol = /^[a-zA-Z0-9._%+-]+@ucol\.mx$/;
-  if (!correoUCol.test(email)) {
-    throw new Error("Insert a valid email address");
-  }
-}
-
-function validationVisitor(email: string){
-  const correoUCol = /^[a-zA-Z0-9._%+-]+@ucol\.mx$/;
-  if (correoUCol.test(email)) {
-    throw new Error("Insert a valid email address");
-  }
-}
 
 export default router;
