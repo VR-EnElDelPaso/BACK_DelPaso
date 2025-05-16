@@ -15,11 +15,17 @@ export const sendVerificationEmail = async (
   verificationToken: string
 ): Promise<void> => {
   try {
+    // build the verification link
+    const client_url = process.env.CLIENT_URL;
+    if (!client_url) throw new Error("CLIENT_URL is not defined");
+    const verificationLink = `${client_url}/auth/verify-email/${verificationToken}`;
+
+    // build the email content
     const mailOptions: nodemailer.SendMailOptions = {
       from: sender,
       to,
       subject: "Verifica tu correo en MUVI 😊",
-      html: verificationEmailTemplate(verificationToken),
+      html: verificationEmailTemplate(verificationLink),
     };
     const response = await transporter.sendMail(mailOptions);
     console.log("Send email successfully", response.messageId);

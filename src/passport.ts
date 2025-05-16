@@ -22,6 +22,10 @@ const localStrategy = new LocalStrategy(
     try {
       // Buscar al usuario por su email
       const user = await prisma.user.findUnique({ where: { email } });
+      
+      if (!user?.is_verified) {
+        return done(null, false, { message: "User is not verified." });
+      }
 
       if (!user || !user.password) {
         return done(null, false, { message: "Password is not set for this user." });

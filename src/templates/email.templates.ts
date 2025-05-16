@@ -1,31 +1,59 @@
-export const verificationEmailTemplate = (verificationCode: string) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your Email</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(to right, #4CAF50, #45a049); padding: 20px; text-align: center;">
-    <h1 style="color: white; margin: 0;">Verify Your Email</h1>
-  </div>
-  <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-    <p>Hello,</p>
-    <p>Thank you for signing up! Your verification code is:</p>
-    <div style="text-align: center; margin: 30px 0;">
-      <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4CAF50;">${verificationCode}</span>
+export const verificationEmailTemplate = (verificationLink: string) => `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifica tu Correo Electrónico</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(to right, #B33424, #a02a1a); padding: 20px; text-align: center;">
+      <h1 style="color: white; margin: 0;">Verifica tu Correo Electrónico</h1>
     </div>
-    <p>Enter this code on the verification page to complete your registration.</p>
-    <p>This code will expire in 15 minutes for security reasons.</p>
-    <p>If you didn't create an account with us, please ignore this email.</p>
-    <p>Best regards,<br>Your App Team</p>
-  </div>
-  <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
-    <p>This is an automated message, please do not reply to this email.</p>
-  </div>
-</body>
-</html>
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+      <p>¡Hola!</p>
+      <p>¡Gracias por registrarte! Para completar tu registro, por favor verifica tu dirección de correo electrónico haciendo clic en el siguiente enlace:</p>
+
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${verificationLink}" 
+          style="display: inline-block; 
+                  background: linear-gradient(to right, #B33424, #a02a1a); 
+                  color: white; 
+                  padding: 15px 30px; 
+                  text-decoration: none; 
+                  border-radius: 5px; 
+                  font-weight: bold; 
+                  font-size: 16px; 
+                  transition: all 0.3s ease;"
+          onmouseover="this.style.background='linear-gradient(to right, #a02a1a, #B33424)'"
+          onmouseout="this.style.background='linear-gradient(to right, #B33424, #a02a1a)'">
+          Verificar Correo Electrónico
+        </a>
+      </div>
+
+      <p>Este enlace es válido por las próximas <strong>24 horas</strong> por razones de seguridad.</p>
+
+      <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
+        <strong>¿El botón no funciona?</strong> Copia y pega el siguiente enlace en tu navegador:<br>
+        <span style="word-break: break-all;">${verificationLink}</span>
+      </p>
+
+      <p>Si no creaste una cuenta con nosotros, puedes ignorar este correo electrónico con tranquilidad.</p>
+
+      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+
+      <p>Saludos cordiales,<br>
+      <strong>El equipo de Muvi</strong></p>
+    </div>
+    <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
+      <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+      <p style="margin-top: 10px;">
+        <a href="#" style="color: #888; text-decoration: none;">Política de Privacidad</a> | 
+        <a href="#" style="color: #888; text-decoration: none;">Términos de Servicio</a>
+      </p>
+    </div>
+  </body>
+  </html>
 `;
 
 export const PASSWORD_RESET_SUCCESS_TEMPLATE = `

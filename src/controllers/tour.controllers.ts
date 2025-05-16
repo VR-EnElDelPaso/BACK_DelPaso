@@ -1,7 +1,8 @@
 import { RequestHandler, Request, Response } from "express";
-import { ResponseData } from "../types/ResponseData";
+
 import prisma from "../prisma";
 import { z } from "zod";
+
 import {
   invalidBodyResponse,
   isAdminUser,
@@ -9,12 +10,11 @@ import {
   operationErrorResponse,
   validateIdAndRespond,
 } from "../utils/controllers/controller.utils";
+import { getCurrentOrder, hasOrderExpiredAccess } from '../utils/controllers/tour.utils';
 import { CreateTourSchema, IdsSchema } from "../validations/tour.validations";
+import { ResponseData } from "../types/ResponseData";
 import { TourWithoutUrlSelectQuery, TourWithUrlSelectQuery } from "../querys/tour.querys";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
-import { generateTourAccessToken } from "../utils/generateTokenTour";
-import { getCurrentOrder, hasOrderExpiredAccess } from '../utils/controllers/tour.utils';
-import { Decimal } from "@prisma/client/runtime/library";
 
 
 
