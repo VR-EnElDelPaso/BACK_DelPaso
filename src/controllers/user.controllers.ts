@@ -1,10 +1,12 @@
-import { Request, Response } from "express";
-import { validationStudent, validationVisitor, validationWorker } from "../utils/user.utils";
-import bcrypt from "bcryptjs";
-import prisma from "../prisma";
-import { sendVerificationEmail } from "../mailtrap/email";
+import { Request, RequestHandler, Response } from "express";
 
-export const createUserController = async (req: Request, res: Response) => {
+import bcrypt from "bcryptjs";
+
+import prisma from "../prisma";
+import { generateUserVerificationToken, validationStudent, validationVisitor, validationWorker } from "../utils/user.utils";
+import { sendVerificationEmail } from "../services/email.services";
+
+export const createUserController: RequestHandler = async (req: Request, res: Response) => {
   const { account_number, name, display_name, email, password, role } = req.body;
 
   if (!name || !display_name || !email || !password || !role) {
@@ -19,8 +21,14 @@ export const createUserController = async (req: Request, res: Response) => {
   }
 
   try {
-    let existingUser;
+    // Check if the user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+    if (existingUser && existingUser.is_verified) return res.status(409).json({ error: 'User already exists' });
+    if (existingUser && !existingUser.is_verified) return res.status(409).json({ error: 'User not verified' });
 
+    // validate the account number and email based on the role
     if (role === "WORKER") {
       validationWorker(account_number, email);
     } else if (role === "STUDENT") {
@@ -31,17 +39,8 @@ export const createUserController = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid user role' });
     }
 
-    existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ error: 'User already exists' });
-    }
-
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    // create the user
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await prisma.user.create({
       data: {
         account_number,
@@ -50,11 +49,15 @@ export const createUserController = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         role,
-        verificationToken,
-        verificationTokenExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        is_verified: false,
       }
     });
+
+    // send verification email
+    const verificationToken = generateUserVerificationToken(user);
     sendVerificationEmail(user.email, verificationToken);
+
+    // send response
     res.status(201).json(user);
   } catch (error) {
     console.log(error);

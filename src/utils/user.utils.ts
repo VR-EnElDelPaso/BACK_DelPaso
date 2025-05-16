@@ -1,3 +1,6 @@
+import { User } from "@prisma/client";
+import jwt from "jsonwebtoken";
+
 export function validationStudent(account_number: number, email: string) {
   if(!account_number){
     throw new Error("Account number is missing");
@@ -33,4 +36,12 @@ export function validationWorker(account_number: number, email: string){
   if (!correoUCol.test(email)) {
     throw new Error("Insert a valid email address");
   }
+}
+
+export const generateUserVerificationToken = (user: User): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET must be defined');
+  }
+  return jwt.sign({ id: user.id }, secret, { expiresIn: '1h' });
 }

@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
-import { createMuseumController } from "../controllers/museums.controllers";
+import { createUserController } from "../controllers/user.controllers";
 
 const router = Router();
 
 // --- Create User ---
-router.post("/new", async (req: Request, res: Response) => createMuseumController);
+router.post("/new", createUserController);
 
 export default router;
