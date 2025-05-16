@@ -61,7 +61,7 @@ app.use("/Metadata", metadataRoutes);
 app.use("/api/tours", [setUserMiddleware], tourRoutes);
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/webhooks", mpWebHookRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewsRoutes)
 app.use("/api/museums", museumsRoutes);
 app.use("/api/storage", storageRoutes);
