@@ -3,20 +3,24 @@ name: Deploy using SSH password
 on:
   push:
     branches:
-      - main  # Or your deploy branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH into VM and pull latest code
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 192.3.55.121
-          username: deployuser  # replace with your actual VM username
+          username: admin-elpaso  # o deployuser, si ese es el correcto
           password: ${{ secrets.SSH_PASS }}
           port: 22
           script: |
             cd /home/admin-elpaso/BACK_DelPaso
             git pull origin main
+            npm ci
+            npm run build
+            pm2 restart back-elpaso || pm2 start dist/src/index.js --name back-elpaso
+
