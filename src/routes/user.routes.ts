@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createUserController, verifyUserEmailController } from "../controllers/user.controllers";
+import { createUserController, sendVerificationEmailController, verifyUserEmailController } from "../controllers/user.controllers";
 
 const router = Router();
 
@@ -7,5 +7,7 @@ const router = Router();
 router.post("/new", createUserController);
 
 router.post("/email-verify", verifyUserEmailController)
+
+router.post("/send-verification-email", sendVerificationEmailController)
 
 export default router;

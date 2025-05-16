@@ -18,7 +18,7 @@ export const sendVerificationEmail = async (
     // build the verification link
     const client_url = process.env.CLIENT_URL;
     if (!client_url) throw new Error("CLIENT_URL is not defined");
-    const verificationLink = `${client_url}/auth/verify-email?token=${verificationToken}`;
+    const verificationLink = `${client_url}/auth/verify-email/${verificationToken}`;
 
     // build the email content
     const mailOptions: nodemailer.SendMailOptions = {
