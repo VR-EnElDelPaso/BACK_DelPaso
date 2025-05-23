@@ -232,6 +232,23 @@ async function main() {
         },
       },
     }),
+    prisma.tour.create({
+      data: {
+        name: "Palabralma",
+        description: 'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/collection/7cTcT?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
+        museum_id: museums[0].id,
+        tags: {
+          create: [
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
+            { tag: { connect: { id: tags[1].id } } }, // Local
+          ],
+        },
+      },
+    }),
   ]);
 
   // Crear la landing page principal
