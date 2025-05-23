@@ -117,15 +117,15 @@ async function main() {
     // Museo Fernando Del Paso
     prisma.museum.create({
       data: {
-        name: "Museo Fernando Del Paso",
+        name: "Museo Universitario Fernando del Paso",
         description:
           "El Museo Fernando del Paso es un espacio dedicado a la obra y legado del destacado escritor, pintor y diplomático mexicano. Alberga una colección permanente de manuscritos, pinturas y objetos personales del autor, ofreciendo a los visitantes una inmersión en su universo creativo.",
         address_name:
-          "Av. Chapultepec Sur 198, Americana, 44160 Guadalajara, Jalisco",
+          "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
         main_photo:
           "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
-        latitude: 20.674128,
-        longitude: -103.371306,
+        latitude: 19.244015338719084,
+        longitude: -103.72513560414563,
         open_hours: {
           create: [
             {
@@ -138,39 +138,39 @@ async function main() {
               day: Day.TUESDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.WEDNESDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.THURSDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.FRIDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.SATURDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "16:00",
+              close_time: "14:00",
             },
             {
               day: Day.SUNDAY,
-              is_open: true,
-              open_time: "10:00",
-              close_time: "16:00",
+              is_open: false,
+              open_time: null,
+              close_time: null,
             },
-          ],
+          ]
         },
       },
     }),
