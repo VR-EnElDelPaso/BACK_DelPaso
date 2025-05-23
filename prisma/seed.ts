@@ -117,15 +117,15 @@ async function main() {
     // Museo Fernando Del Paso
     prisma.museum.create({
       data: {
-        name: "Museo Fernando Del Paso",
+        name: "Museo Universitario Fernando del Paso",
         description:
           "El Museo Fernando del Paso es un espacio dedicado a la obra y legado del destacado escritor, pintor y diplomático mexicano. Alberga una colección permanente de manuscritos, pinturas y objetos personales del autor, ofreciendo a los visitantes una inmersión en su universo creativo.",
         address_name:
-          "Av. Chapultepec Sur 198, Americana, 44160 Guadalajara, Jalisco",
+          "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
         main_photo:
           "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
-        latitude: 20.674128,
-        longitude: -103.371306,
+        latitude: 19.244015338719084,
+        longitude: -103.72513560414563,
         open_hours: {
           create: [
             {
@@ -138,98 +138,39 @@ async function main() {
               day: Day.TUESDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.WEDNESDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.THURSDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.FRIDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "18:00",
+              close_time: "14:00",
             },
             {
               day: Day.SATURDAY,
               is_open: true,
               open_time: "10:00",
-              close_time: "16:00",
+              close_time: "14:00",
             },
             {
               day: Day.SUNDAY,
-              is_open: true,
-              open_time: "10:00",
-              close_time: "16:00",
-            },
-          ],
-        },
-      },
-    }),
-    // Museo Regional de Historia de Colima
-    prisma.museum.create({
-      data: {
-        name: "Museo Regional de Historia de Colima",
-        description:
-          "El Museo Regional de Historia de Colima exhibe la rica historia y patrimonio cultural del estado. Sus salas muestran artefactos arqueológicos, documentos históricos y obras de arte que narran el desarrollo de la región desde la época prehispánica hasta la actualidad.",
-        address_name: "Calle Vicente Guerrero 12, Centro, 28000 Colima, Colima",
-        main_photo:
-          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746496010/muvi/epymgvknpsoe5sclj4rq.webp",
-        latitude: 19.243015,
-        longitude: -103.726179,
-        open_hours: {
-          create: [
-            {
-              day: Day.MONDAY,
               is_open: false,
               open_time: null,
               close_time: null,
             },
-            {
-              day: Day.TUESDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.WEDNESDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.THURSDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.FRIDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.SATURDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "15:00",
-            },
-            {
-              day: Day.SUNDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "15:00",
-            },
-          ],
+          ]
         },
       },
     }),
@@ -242,12 +183,12 @@ async function main() {
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
-        name: "Tour Universitario",
-        description: "Recorrido por las principales universidades de la ciudad",
-        price: 25.99,
-        stars: 4.5,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
+        name: "Neomexicanismos",
+        description: "Recorrido por la colección de Neomexicanismos del museo",
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/collection/7ZYnc?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
         museum_id: museums[0].id,
         tags: {
           create: [
@@ -259,49 +200,50 @@ async function main() {
     }),
     prisma.tour.create({
       data: {
-        name: "Ruta Gastronómica",
-        description: "Degustación de comida típica en restaurantes locales",
-        price: 39.99,
-        stars: 4.8,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
-        museum_id: museums[1].id,
-        tags: {
-          create: [
-            { tag: { connect: { id: tags[2].id } } }, // otros estados
-          ],
-        },
-      },
-    }),
-    prisma.tour.create({
-      data: {
-        name: "Excursión a las montañas",
-        description:
-          "Un día de senderismo en los paisajes naturales más bellos",
-        price: 45.5,
-        stars: 5.0,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
+        name: "Instalaciones Fernando del Paso",
+        description: 'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/5TCxb/collection/7cp8f?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         museum_id: museums[0].id,
         tags: {
           create: [
-            { tag: { connect: { id: tags[3].id } } }, // otros países
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
+            { tag: { connect: { id: tags[1].id } } }, // Local
           ],
         },
       },
     }),
     prisma.tour.create({
       data: {
-        name: "Tour Nocturno",
-        description:
-          "Explora la ciudad de noche y conoce sus historias más oscuras",
-        price: 30.0,
-        stars: 4.4,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
-        museum_id: museums[1].id,
+        name: "Mutante",
+        description: 'Recorrido por la colección de Mutante en el museo de arte emergente "Fernando del Paso"',
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/collection/7KHM3?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
+        museum_id: museums[0].id,
         tags: {
           create: [
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
+            { tag: { connect: { id: tags[1].id } } }, // Local
+          ],
+        },
+      },
+    }),
+    prisma.tour.create({
+      data: {
+        name: "Palabralma",
+        description: 'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/collection/7cTcT?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
+        museum_id: museums[0].id,
+        tags: {
+          create: [
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
             { tag: { connect: { id: tags[1].id } } }, // Local
           ],
         },
