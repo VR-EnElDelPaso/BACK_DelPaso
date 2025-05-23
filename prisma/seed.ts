@@ -198,6 +198,23 @@ async function main() {
         },
       },
     }),
+    prisma.tour.create({
+      data: {
+        name: "Instalaciones Fernando del Paso",
+        description: 'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/5TCxb/collection/7cp8f?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
+        museum_id: museums[0].id,
+        tags: {
+          create: [
+            { tag: { connect: { id: tags[0].id } } }, // Universitario
+            { tag: { connect: { id: tags[1].id } } }, // Local
+          ],
+        },
+      },
+    }),
   ]);
 
   // Crear la landing page principal
