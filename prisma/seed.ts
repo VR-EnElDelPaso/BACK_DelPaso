@@ -174,65 +174,6 @@ async function main() {
         },
       },
     }),
-    // Museo Regional de Historia de Colima
-    prisma.museum.create({
-      data: {
-        name: "Museo Regional de Historia de Colima",
-        description:
-          "El Museo Regional de Historia de Colima exhibe la rica historia y patrimonio cultural del estado. Sus salas muestran artefactos arqueológicos, documentos históricos y obras de arte que narran el desarrollo de la región desde la época prehispánica hasta la actualidad.",
-        address_name: "Calle Vicente Guerrero 12, Centro, 28000 Colima, Colima",
-        main_photo:
-          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746496010/muvi/epymgvknpsoe5sclj4rq.webp",
-        latitude: 19.243015,
-        longitude: -103.726179,
-        open_hours: {
-          create: [
-            {
-              day: Day.MONDAY,
-              is_open: false,
-              open_time: null,
-              close_time: null,
-            },
-            {
-              day: Day.TUESDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.WEDNESDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.THURSDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.FRIDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "17:00",
-            },
-            {
-              day: Day.SATURDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "15:00",
-            },
-            {
-              day: Day.SUNDAY,
-              is_open: true,
-              open_time: "09:00",
-              close_time: "15:00",
-            },
-          ],
-        },
-      },
-    }),
   ]);
 
   // URL de ejemplo para los Tours
@@ -242,66 +183,16 @@ async function main() {
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
-        name: "Tour Universitario",
-        description: "Recorrido por las principales universidades de la ciudad",
-        price: 25.99,
-        stars: 4.5,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
+        name: "Neomexicanismos",
+        description: "Recorrido por la colección de Neomexicanismos del museo",
+        price: 80,
+        stars: 0,
+        url: "https://kuula.co/share/collection/7ZYnc?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
+        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
         museum_id: museums[0].id,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
-            { tag: { connect: { id: tags[1].id } } }, // Local
-          ],
-        },
-      },
-    }),
-    prisma.tour.create({
-      data: {
-        name: "Ruta Gastronómica",
-        description: "Degustación de comida típica en restaurantes locales",
-        price: 39.99,
-        stars: 4.8,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
-        museum_id: museums[1].id,
-        tags: {
-          create: [
-            { tag: { connect: { id: tags[2].id } } }, // otros estados
-          ],
-        },
-      },
-    }),
-    prisma.tour.create({
-      data: {
-        name: "Excursión a las montañas",
-        description:
-          "Un día de senderismo en los paisajes naturales más bellos",
-        price: 45.5,
-        stars: 5.0,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
-        museum_id: museums[0].id,
-        tags: {
-          create: [
-            { tag: { connect: { id: tags[3].id } } }, // otros países
-          ],
-        },
-      },
-    }),
-    prisma.tour.create({
-      data: {
-        name: "Tour Nocturno",
-        description:
-          "Explora la ciudad de noche y conoce sus historias más oscuras",
-        price: 30.0,
-        stars: 4.4,
-        url: tourUrl,
-        image_url: "https://placehold.co/400",
-        museum_id: museums[1].id,
-        tags: {
-          create: [
             { tag: { connect: { id: tags[1].id } } }, // Local
           ],
         },
