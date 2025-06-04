@@ -13,16 +13,18 @@ async function main() {
   await prisma.tourTag.deleteMany();
   await prisma.tour.deleteMany();
   await prisma.tag.deleteMany();
-  await prisma.openHour.deleteMany(); // Limpiar horas de apertura
+  await prisma.openHour.deleteMany();
   await prisma.museum.deleteMany();
-  await prisma.user.deleteMany(); // Añadido para limpiar usuarios existentes
+  await prisma.user.deleteMany();
 
-  // Crear 4 usuarios (2 estudiantes y 2 visitantes)
+  // Crear 4 usuarios con los nuevos campos completos
   const users = await Promise.all([
     prisma.user.create({
       data: {
         account_number: 20183890,
         name: "Miguel Angel",
+        first_lastname: "Rosado",
+        second_lastname: "González",
         display_name: "Miguel",
         email: "miguel@example.com",
         role: "STUDENT",
@@ -33,6 +35,8 @@ async function main() {
     prisma.user.create({
       data: {
         name: "Admin",
+        first_lastname: "Sistema",
+        second_lastname: "Principal",
         display_name: "Admin",
         email: "admin@admin.com",
         role: "ADMIN",
@@ -42,27 +46,32 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        account_number: 30001234,
-        name: "Carlos Rodríguez",
+        account_number: 1234,
+        name: "Carlos",
+        first_lastname: "Rodríguez",
+        second_lastname: "Martínez",
         display_name: "Carlos",
-        email: "carlos@example.com",
+        email: "carlos@ucol.mx",
         role: "WORKER",
-        password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        password: bcrypt.hashSync("password"),
         is_verified: true,
       },
     }),
     prisma.user.create({
       data: {
-        account_number: 30005678,
-        name: "Laura Martínez",
+        name: "Laura",
+        first_lastname: "Martínez",
+        second_lastname: "López",
         display_name: "Laura",
         email: "laura@example.com",
         role: "VISITOR",
-        password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        password: bcrypt.hashSync("password"),
         is_verified: true,
       },
     }),
   ]);
+
+  console.log("Users created:", users.length);
 
   // Crear preguntas frecuentes (FAQs)
   const faqs = await Promise.all([
@@ -104,6 +113,8 @@ async function main() {
     }),
   ]);
 
+  console.log("FAQs created:", faqs.length);
+
   // Crear Tags
   const tags = await Promise.all([
     prisma.tag.create({ data: { name: "universitario" } }),
@@ -111,6 +122,8 @@ async function main() {
     prisma.tag.create({ data: { name: "otros estados" } }),
     prisma.tag.create({ data: { name: "otros países" } }),
   ]);
+
+  console.log("Tags created:", tags.length);
 
   // Crear Museos con horas de apertura
   const museums = await Promise.all([
@@ -120,8 +133,7 @@ async function main() {
         name: "Museo Universitario Fernando del Paso",
         description:
           "El Museo Fernando del Paso es un espacio dedicado a la obra y legado del destacado escritor, pintor y diplomático mexicano. Alberga una colección permanente de manuscritos, pinturas y objetos personales del autor, ofreciendo a los visitantes una inmersión en su universo creativo.",
-        address_name:
-          "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
+        address_name: "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
         main_photo:
           "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         latitude: 19.244015338719084,
@@ -170,14 +182,13 @@ async function main() {
               open_time: null,
               close_time: null,
             },
-          ]
+          ],
         },
       },
     }),
   ]);
 
-  // URL de ejemplo para los Tours
-  const tourUrl = "https://kuula.co/share/collection/example";
+  console.log("Museums created:", museums.length);
 
   // Crear Tours con múltiples Tags
   const tours = await Promise.all([
@@ -188,7 +199,8 @@ async function main() {
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7ZYnc?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
         museum_id: museums[0].id,
         tags: {
           create: [
@@ -201,11 +213,13 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Instalaciones Fernando del Paso",
-        description: 'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/5TCxb/collection/7cp8f?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
+        image_url:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         museum_id: museums[0].id,
         tags: {
           create: [
@@ -218,11 +232,13 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Mutante",
-        description: 'Recorrido por la colección de Mutante en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'Recorrido por la colección de Mutante en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7KHM3?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
         museum_id: museums[0].id,
         tags: {
           create: [
@@ -235,11 +251,13 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Palabralma",
-        description: 'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7cTcT?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
         museum_id: museums[0].id,
         tags: {
           create: [
@@ -250,6 +268,8 @@ async function main() {
       },
     }),
   ]);
+
+  console.log("Tours created:", tours.length);
 
   // Crear la landing page principal
   const landingPage = await prisma.page.create({
@@ -324,9 +344,9 @@ async function main() {
     }),
   ]);
 
-  console.log("Seeding base data completed");
+  console.log("Slides created:", slides.length);
 
-  // Después de crear los slides, ahora creamos los títulos y descripciones como copies
+  // Crear títulos y descripciones para los slides como copies
   const slideCopies = [];
 
   // Títulos y descripciones para el primer slide
@@ -402,12 +422,13 @@ async function main() {
   // Ejecutar todas las operaciones de copia de slides
   await Promise.all(slideCopies);
 
-  console.log("Seeding executed successfully");
+  console.log("Slide copies created:", slideCopies.length);
+  console.log("✅ Seeding completed successfully with updated User model!");
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("❌ Error during seeding:", e);
     process.exit(1);
   })
   .finally(async () => {
