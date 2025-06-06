@@ -120,8 +120,7 @@ async function main() {
         name: "Museo Universitario Fernando del Paso",
         description:
           "El Museo Fernando del Paso es un espacio dedicado a la obra y legado del destacado escritor, pintor y diplomático mexicano. Alberga una colección permanente de manuscritos, pinturas y objetos personales del autor, ofreciendo a los visitantes una inmersión en su universo creativo.",
-        address_name:
-          "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
+        address_name: "C. 27 de Septiembre 119, Centro, 28000 Colima, Col.",
         main_photo:
           "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         latitude: 19.244015338719084,
@@ -170,7 +169,7 @@ async function main() {
               open_time: null,
               close_time: null,
             },
-          ]
+          ],
         },
       },
     }),
@@ -179,7 +178,7 @@ async function main() {
   // URL de ejemplo para los Tours
   const tourUrl = "https://kuula.co/share/collection/example";
 
-  // Crear Tours con múltiples Tags
+  // Crear Tours con múltiples Tags y NUEVOS CAMPOS DE ACREDITACIÓN
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
@@ -188,8 +187,12 @@ async function main() {
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7ZYnc?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: true,
+        accreditable_hours: 2.0,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -201,12 +204,17 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Instalaciones Fernando del Paso",
-        description: 'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'El primer recorrido virtual en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/5TCxb/collection/7cp8f?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
+        image_url:
+          "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: false,
+        accreditable_hours: null,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -218,12 +226,17 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Mutante",
-        description: 'Recorrido por la colección de Mutante en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'Recorrido por la colección de Mutante en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7KHM3?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: true,
+        accreditable_hours: 1.5,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -235,12 +248,17 @@ async function main() {
     prisma.tour.create({
       data: {
         name: "Palabralma",
-        description: 'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
+        description:
+          'Primera colección expuesta en el museo de arte emergente "Fernando del Paso"',
         price: 80,
         stars: 0,
         url: "https://kuula.co/share/collection/7cTcT?logo=-1&info=0&fs=1&vr=1&thumbs=3&alpha=0.77&inst=es",
-        image_url: "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
+        image_url:
+          "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: false,
+        accreditable_hours: null,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -403,6 +421,16 @@ async function main() {
   await Promise.all(slideCopies);
 
   console.log("Seeding executed successfully");
+  console.log(`Created ${tours.length} tours with accreditation data:`);
+
+  // Mostrar información sobre los tours creados
+  tours.forEach((tour, index) => {
+    console.log(
+      `- ${tour.name}: ${
+        tour.is_accreditable ? "Acreditable" : "No acreditable"
+      }${tour.accreditable_hours ? ` (${tour.accreditable_hours}h)` : ""}`
+    );
+  });
 }
 
 main()
