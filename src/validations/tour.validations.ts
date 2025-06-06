@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const CreateTourSchema = z.object({
   name: z.string().min(3),
@@ -7,11 +7,12 @@ export const CreateTourSchema = z.object({
   url: z.string().url(),
   image_url: z.string().url(),
   museum_id: z.string().uuid(),
-  tags: z.array(z.string()).optional()
+  tags: z.array(z.string()).optional(),
+  is_accreditable: z.boolean().default(false),
+  accreditable_hours: z.number().positive().optional().nullable(),
 });
 
-// permit partial updates to patch a record
+// Permit partial updates to patch a record
 export const EditTourSchema = CreateTourSchema.partial();
-
 
 export const IdsSchema = z.array(z.string());
