@@ -13,16 +13,18 @@ async function main() {
   await prisma.tourTag.deleteMany();
   await prisma.tour.deleteMany();
   await prisma.tag.deleteMany();
-  await prisma.openHour.deleteMany(); // Limpiar horas de apertura
+  await prisma.openHour.deleteMany();
   await prisma.museum.deleteMany();
-  await prisma.user.deleteMany(); // Añadido para limpiar usuarios existentes
+  await prisma.user.deleteMany();
 
-  // Crear 4 usuarios (2 estudiantes y 2 visitantes)
+  // Crear 4 usuarios con los nuevos campos completos
   const users = await Promise.all([
     prisma.user.create({
       data: {
         account_number: 20183890,
         name: "Miguel Angel",
+        first_lastname: "Rosado",
+        second_lastname: "González",
         display_name: "Miguel",
         email: "miguel@example.com",
         role: "STUDENT",
@@ -33,6 +35,8 @@ async function main() {
     prisma.user.create({
       data: {
         name: "Admin",
+        first_lastname: "Sistema",
+        second_lastname: "Principal",
         display_name: "Admin",
         email: "admin@admin.com",
         role: "ADMIN",
@@ -42,27 +46,32 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        account_number: 30001234,
-        name: "Carlos Rodríguez",
+        account_number: 1234,
+        name: "Carlos",
+        first_lastname: "Rodríguez",
+        second_lastname: "Martínez",
         display_name: "Carlos",
-        email: "carlos@example.com",
+        email: "carlos@ucol.mx",
         role: "WORKER",
-        password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        password: bcrypt.hashSync("password"),
         is_verified: true,
       },
     }),
     prisma.user.create({
       data: {
-        account_number: 30005678,
-        name: "Laura Martínez",
+        name: "Laura",
+        first_lastname: "Martínez",
+        second_lastname: "López",
         display_name: "Laura",
         email: "laura@example.com",
         role: "VISITOR",
-        password: bcrypt.hashSync("password"), // Añadido password por seguridad
+        password: bcrypt.hashSync("password"),
         is_verified: true,
       },
     }),
   ]);
+
+  console.log("Users created:", users.length);
 
   // Crear preguntas frecuentes (FAQs)
   const faqs = await Promise.all([
@@ -104,6 +113,8 @@ async function main() {
     }),
   ]);
 
+  console.log("FAQs created:", faqs.length);
+
   // Crear Tags
   const tags = await Promise.all([
     prisma.tag.create({ data: { name: "universitario" } }),
@@ -111,6 +122,8 @@ async function main() {
     prisma.tag.create({ data: { name: "otros estados" } }),
     prisma.tag.create({ data: { name: "otros países" } }),
   ]);
+
+  console.log("Tags created:", tags.length);
 
   // Crear Museos con horas de apertura
   const museums = await Promise.all([
@@ -175,8 +188,7 @@ async function main() {
     }),
   ]);
 
-  // URL de ejemplo para los Tours
-  const tourUrl = "https://kuula.co/share/collection/example";
+  console.log("Museums created:", museums.length);
 
   // Crear Tours con múltiples Tags y NUEVOS CAMPOS DE ACREDITACIÓN
   const tours = await Promise.all([
@@ -269,6 +281,8 @@ async function main() {
     }),
   ]);
 
+  console.log("Tours created:", tours.length);
+
   // Crear la landing page principal
   const landingPage = await prisma.page.create({
     data: {
@@ -342,9 +356,9 @@ async function main() {
     }),
   ]);
 
-  console.log("Seeding base data completed");
+  console.log("Slides created:", slides.length);
 
-  // Después de crear los slides, ahora creamos los títulos y descripciones como copies
+  // Crear títulos y descripciones para los slides como copies
   const slideCopies = [];
 
   // Títulos y descripciones para el primer slide
@@ -435,7 +449,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("❌ Error during seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

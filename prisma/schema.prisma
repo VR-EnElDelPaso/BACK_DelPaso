@@ -59,11 +59,13 @@ model User {
   account_number Int?   @unique
   email          String @unique
 
-  name         String
-  display_name String
-  image        String?
-  password     String?
-  role         Role    @default(VISITOR)
+  name           String
+  first_lastname String
+  second_lastname String
+  display_name   String
+  image          String?
+  password       String?
+  role           Role    @default(VISITOR)
 
   is_verified                Boolean? // Email verificado
   verificationToken          String? // Token de verificación
