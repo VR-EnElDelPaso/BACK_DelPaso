@@ -190,7 +190,7 @@ async function main() {
 
   console.log("Museums created:", museums.length);
 
-  // Crear Tours con múltiples Tags
+  // Crear Tours con múltiples Tags y NUEVOS CAMPOS DE ACREDITACIÓN
   const tours = await Promise.all([
     prisma.tour.create({
       data: {
@@ -202,6 +202,9 @@ async function main() {
         image_url:
           "https://res.cloudinary.com/dxdme71no/image/upload/v1748024618/qxoo2s1eldiajxl8mh4s.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: true,
+        accreditable_hours: 2.0,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -221,6 +224,9 @@ async function main() {
         image_url:
           "https://res.cloudinary.com/dstcjr7lh/image/upload/v1746495993/muvi/gnavoznxcxvvuvhv3rc3.jpg",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: false,
+        accreditable_hours: null,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -240,6 +246,9 @@ async function main() {
         image_url:
           "https://res.cloudinary.com/dxdme71no/image/upload/v1748025101/d2jlakfwlphzajwo9q28.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: true,
+        accreditable_hours: 1.5,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -259,6 +268,9 @@ async function main() {
         image_url:
           "https://res.cloudinary.com/dxdme71no/image/upload/v1748025300/ewkzlvclqvw8h75iwdsc.png",
         museum_id: museums[0].id,
+        // NUEVOS CAMPOS DE ACREDITACIÓN
+        is_accreditable: false,
+        accreditable_hours: null,
         tags: {
           create: [
             { tag: { connect: { id: tags[0].id } } }, // Universitario
@@ -422,8 +434,17 @@ async function main() {
   // Ejecutar todas las operaciones de copia de slides
   await Promise.all(slideCopies);
 
-  console.log("Slide copies created:", slideCopies.length);
-  console.log("✅ Seeding completed successfully with updated User model!");
+  console.log("Seeding executed successfully");
+  console.log(`Created ${tours.length} tours with accreditation data:`);
+
+  // Mostrar información sobre los tours creados
+  tours.forEach((tour, index) => {
+    console.log(
+      `- ${tour.name}: ${
+        tour.is_accreditable ? "Acreditable" : "No acreditable"
+      }${tour.accreditable_hours ? ` (${tour.accreditable_hours}h)` : ""}`
+    );
+  });
 }
 
 main()
