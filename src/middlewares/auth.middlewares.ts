@@ -1,15 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import passportInstance from "../passport";
 import UserWithoutPassword from "../types/auth/UserWithoutPassword";
-import { Role } from "@prisma/client";
+import { Role } from "@prisma/client"; // Import correcto del enum Role
 import jwt from "jsonwebtoken";
 
 interface DecodedToken {
   userId: string;
   tourId: string;
 }
-
-
 
 /**
  * authMiddleware - Middleware to handle authentication for incoming requests.
@@ -21,26 +19,32 @@ interface DecodedToken {
  * @param {NextFunction} next - The Express next function to proceed to the next middleware.
  * @returns {void} - If the user is authenticated, it calls `next()`. Otherwise, it responds with a 401 Unauthorized error.
  */
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Check if the user is already authenticated
   if (req.isAuthenticated()) {
     return next();
   }
 
   // Authenticate using JWT if the user is not already authenticated
-  passportInstance.authenticate('jwt', { session: false }, (err: Error, user: UserWithoutPassword) => {
-    // Handle authentication errors or missing user
-    if (err || !user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  passportInstance.authenticate(
+    "jwt",
+    { session: false },
+    (err: Error, user: UserWithoutPassword) => {
+      // Handle authentication errors or missing user
+      if (err || !user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Attach the authenticated user to the request object
+      req.user = user;
+      next();
     }
-
-    // Attach the authenticated user to the request object
-    req.user = user;
-    next();
-  })(req, res, next);
+  )(req, res, next);
 };
-
-
 
 /**
  * setUserMiddleware - Middleware to authenticate a user using JWT (JSON Web Token) and attach the authenticated user to the request object.
@@ -62,21 +66,27 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
  *   }
  * });
  */
-export const setUserMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const setUserMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Authenticate using JWT
-  passportInstance.authenticate('jwt', { session: false }, (err: Error, user: UserWithoutPassword) => {
-    // If there's an error or no user is found, proceed without attaching a user
-    if (err || !user) {
-      return next();
+  passportInstance.authenticate(
+    "jwt",
+    { session: false },
+    (err: Error, user: UserWithoutPassword) => {
+      // If there's an error or no user is found, proceed without attaching a user
+      if (err || !user) {
+        return next();
+      }
+
+      // Attach the authenticated user to the request object
+      req.user = user;
+      next();
     }
-
-    // Attach the authenticated user to the request object
-    req.user = user;
-    next();
-  })(req, res, next);
+  )(req, res, next);
 };
-
-
 
 /**
  * verifyRolesMiddleware - Middleware factory to verify if the authenticated user has the required roles.
@@ -86,8 +96,8 @@ export const setUserMiddleware = (req: Request, res: Response, next: NextFunctio
  * @returns {(req: Request, res: Response, next: NextFunction) => void} - A middleware function that verifies the user's role.
  *
  * @example
- * // Allow only users with the 'admin' or 'editor' roles
- * app.get('/admin-route', verifyRolesMiddleware(['admin', 'editor']), (req, res) => {
+ * // Allow only users with the 'ADMIN' or 'WORKER' roles
+ * app.get('/admin-route', verifyRolesMiddleware([Role.ADMIN, Role.WORKER]), (req, res) => {
  *   res.json({ message: 'You have access to this route' });
  * });
  */
@@ -97,16 +107,17 @@ export const verifyRolesMiddleware = (roles: Role[]) => {
     const user = req.user as UserWithoutPassword;
 
     // Check if the user's role is included in the allowed roles
-    if (!roles.includes(user.role)) {
-      return res.status(403).json({ ok: false, error: 'You do not have sufficient permissions' });
+    if (!roles.includes(user.role as Role)) {
+      // Cast explícito a Role
+      return res
+        .status(403)
+        .json({ ok: false, error: "You do not have sufficient permissions" });
     }
 
     // If the user has the required role, proceed to the next middleware
     next();
   };
 };
-
-
 
 /**
  * verifyTokenMiddleware - Middleware to verify the validity of a JWT token provided in the request headers.
@@ -124,14 +135,18 @@ export const verifyRolesMiddleware = (roles: Role[]) => {
  *   res.json({ message: 'You have access to this route', user: req.user });
  * });
  */
-export const verifyTokenMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const verifyTokenMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Extract the token from the Authorization header
   const token = req.headers.authorization?.split(" ")[1];
   const secretKey = process.env.JWT_SECRET as string;
 
   // Check if the token is missing
   if (!token) {
-    return res.status(401).json({ ok: false, error: 'Token missing' });
+    return res.status(401).json({ ok: false, error: "Token missing" });
   }
 
   try {
@@ -147,6 +162,6 @@ export const verifyTokenMiddleware = (req: Request, res: Response, next: NextFun
   } catch (error) {
     // Handle invalid or expired tokens
     console.error("Invalid token:", error);
-    return res.status(401).json({ ok: false, error: 'Invalid token' });
+    return res.status(401).json({ ok: false, error: "Invalid token" });
   }
 };
