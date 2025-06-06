@@ -60,8 +60,8 @@ model User {
   email          String @unique
 
   name           String
-  first_lastname String
-  second_lastname String
+  first_lastname String @default("")
+  second_lastname String @default("")
   display_name   String
   image          String?
   password       String?
