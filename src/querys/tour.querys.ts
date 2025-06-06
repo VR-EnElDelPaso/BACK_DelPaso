@@ -20,6 +20,8 @@ export const TourWithoutUrlSelectQuery = {
   stars: true,       // Calificación en estrellas del tour
   image_url: true,   // URL de la imagen del tour
   museum_id: true,   // ID del museo asociado al tour
+  is_accreditable: true, // Indica si el tour es acreditable
+  accreditable_hours: true, // Horas acreditables del tour
   created_at: true,  // Fecha de creación del tour
   updated_at: true,  // Fecha de última actualización del tour
   tags: {
