@@ -59,13 +59,13 @@ model User {
   account_number Int?   @unique
   email          String @unique
 
-  name           String
-  first_lastname String @default("")
-  second_lastname String @default("")
-  display_name   String
-  image          String?
-  password       String?
-  role           Role    @default(VISITOR)
+  name            String
+  first_lastname  String  @default("")
+  second_lastname String  @default("")
+  display_name    String
+  image           String?
+  password        String?
+  role            Role    @default(VISITOR)
 
   is_verified                Boolean? // Email verificado
   verificationToken          String? // Token de verificación
@@ -147,7 +147,7 @@ model Tour {
   image_url   String
 
   // Acreditaciones
-  is_accreditable    Boolean @default(false)
+  is_accreditable    Boolean  @default(false)
   accreditable_hours Decimal? @db.Decimal(5, 2)
 
   museum_id String @default("")
@@ -168,11 +168,12 @@ model TourAccess {
   id String @id @default(uuid())
 
   tour_id  String
-  tour     Tour   @relation(fields: [tour_id], references: [id], onDelete: Cascade)
+  tour     Tour    @relation(fields: [tour_id], references: [id], onDelete: Cascade)
   user_id  String
-  user     User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user     User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
   order_id String
-  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order    Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  expired  Boolean @default(false)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
