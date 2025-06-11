@@ -148,7 +148,7 @@ model Tour {
 
   // Acreditaciones
   is_accreditable    Boolean  @default(false)
-  accreditable_hours Decimal? @db.Decimal(5, 2)
+  accreditable_hours Decimal? @db.Decimal(5, 2) @default(2)
 
   museum_id String @default("")
   museum    Museum @relation(fields: [museum_id], references: [id], onDelete: Cascade)
