@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkPurchasedTourController, createTourController, deleteTourController, editTourController, getTourUrl, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController } from '../controllers/tour.controllers';
+import { checkPurchasedTourController, createTourController, deleteTourController, editTourController, getTourUrlController, getAllToursController, getTourByIdController, getToursFromIdsController, getTourSuggestionsController, markTourAsCompletedController } from '../controllers/tour.controllers';
 import { authMiddleware, verifyRolesMiddleware } from "../middlewares/auth.middlewares";
 
 const router = Router();
@@ -35,10 +35,10 @@ router.post("/suggestion", getTourSuggestionsController);
 router.get("/:id/check-purchase", [authMiddleware], checkPurchasedTourController);
 
 // getTourUrl
-router.get("/:id/url", [authMiddleware], getTourUrl);
+router.get("/:id/url", [authMiddleware], getTourUrlController);
 
-// getTourUrl
-// router.get("/:id/url", [authMiddleware], getTourUrlController);
+// mark tour as completed
+router.post("/:id/complete", [authMiddleware], markTourAsCompletedController);
 
 
 

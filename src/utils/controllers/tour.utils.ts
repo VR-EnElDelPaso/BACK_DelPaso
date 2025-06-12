@@ -42,14 +42,20 @@ export const getCurrentOrder = async (tour: Tour, user: UserWithoutPassword) => 
 }
 
 export const hasOrderExpiredAccess = async (orderId: string, tourId: string): Promise<boolean> => {
+  console.log("Checking if order has expired access", orderId, tourId);
   const foundAccess = await prisma.tourAccess.findFirst({
     where: {
       order_id: orderId,
       tour_id: tourId,
-      expires_at: {
-        lt: new Date()
-      }
+      OR: [
+        { expired: true },
+        { expires_at: { lt: new Date() } }
+      ]
+    },
+    orderBy: {
+      created_at: 'desc',
     }
   });
+  console.log("foundAccess", foundAccess);
   return !!foundAccess;
 }

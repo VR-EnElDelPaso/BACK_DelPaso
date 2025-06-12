@@ -18,6 +18,11 @@ export const getAllAccreditationsController: RequestHandler = async (req, res) =
             role: Role.STUDENT,
           },
         },
+        {
+          tour: {
+            is_accreditable: true,
+          }
+        }
       ],
     },
     select: {
@@ -39,6 +44,9 @@ export const getAllAccreditationsController: RequestHandler = async (req, res) =
         },
       },
       expires_at: true,
+    },
+    orderBy: {
+      expires_at: 'asc',
     },
   })
 
