@@ -372,6 +372,8 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
   // Find a paid order associated with the tour and user
   const foundOrder = await getCurrentOrder(foundTour, user);
   const foundExpiredToken = await hasOrderExpiredAccess(foundOrder?.id ?? '', foundTour.id);
+  console.log("foundOrder", foundOrder);
+  console.log("foundExpiredToken", foundExpiredToken);
   if (!foundOrder || foundExpiredToken) return res.status(403).json({
     ok: true,
     message: "Tour not purchased",
@@ -410,7 +412,7 @@ export const checkPurchasedTourController: RequestHandler = async (req: Request,
  * 4. If an access token exists, returns the tour URL.
  * 5. If no access token exists, generates a new access token and returns the tour URL.
  */
-export const getTourUrl: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
+export const getTourUrlController: RequestHandler = async (req: Request, res: Response<ResponseData>) => {
   try {
     const user = req.user as UserWithoutPassword;
 
@@ -454,7 +456,7 @@ export const getTourUrl: RequestHandler = async (req: Request, res: Response<Res
         tour_id: foundTour?.id,
         user_id: user?.id,
         order_id: foundOrder?.id,
-        expires_at: new Date(Date.now() + 5 * 1000),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
       },
     });
     return res.status(201).json({
@@ -470,3 +472,54 @@ export const getTourUrl: RequestHandler = async (req: Request, res: Response<Res
   }
 }
 
+/**
+ * Marks a tour as completed for the authenticated user.
+ * 
+ * @param {Request} req - The request object containing the tour ID in the URL parameters.
+ * @param {Response} res - The response object to send the result.
+ * 
+ * @returns {Promise<Response>} - A response indicating whether the tour was marked as completed successfully.
+ */
+export const markTourAsCompletedController: RequestHandler = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const user = req.user as UserWithoutPassword;
+
+    // Validate tour existence
+    const foundTour = await prisma.tour.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!foundTour) return notFoundResponse(res, "Tour");
+
+    // Check if the user has purchased the tour
+    const foundAccess = await prisma.tourAccess.findFirst({
+      where: {
+        tour_id: foundTour.id,
+        user_id: user.id,
+      },
+      orderBy: {
+        created_at: 'desc', // Get the most recent access
+      },
+    })
+    if (!foundAccess) return notFoundResponse(res, "Tour Access");
+    console.log("foundAccesssss", foundAccess);
+
+    // Mark the tour as completed for the user
+    await prisma.tourAccess.update({
+      where: {
+        id: foundAccess.id,
+      },
+      data: {
+        expired: true, // Mark as completed
+        expires_at: new Date(), // Set expiration to now
+      },
+    });
+
+    return res.status(200).json({
+      ok: true,
+      message: "Tour marked as completed successfully",
+    } as ResponseData);
+  } catch (error) {
+    console.error("Error marking tour as completed:", error);
+    return operationErrorResponse(res);
+  }
+}
