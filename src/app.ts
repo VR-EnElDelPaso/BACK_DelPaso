@@ -19,6 +19,7 @@ import orderRoutes from "./routes/order.routes";
 import tagRoutes from './routes/tag.routes';
 import carouselRoutes from './routes/carousel.routes';
 import faqRoutes from "./routes/faq.routes";
+import accreditationRoutes from "./routes/accreditations.routes";
 
 // ----[middlewares]----
 import { authMiddleware, setUserMiddleware } from "./middlewares/auth.middlewares";
@@ -69,6 +70,7 @@ app.use("/api/orders", orderRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/carousels', carouselRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/accreditations", [setUserMiddleware], accreditationRoutes);
 
 app.get("/", [authMiddleware], (req: Request, res: Response) => {
   res.send(JSON.stringify(req.user));
