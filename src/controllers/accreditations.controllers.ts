@@ -41,6 +41,7 @@ export const getAllAccreditationsController: RequestHandler = async (req, res) =
           first_lastname: true,
           second_lastname: true,
           account_number: true,
+          email: true,
         },
       },
       expires_at: true,
